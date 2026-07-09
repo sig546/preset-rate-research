@@ -1,0 +1,53 @@
+name: 更新预定利率研究值（预测值）
+
+# 注意：定时数据更新已改为「本地 WorkBuddy 定时任务」承载（原 update_predictions.py
+# 直连 akshare 的 bond_zh_us_rate() 无超时、云端 runner 易挂死，且国内数据源云端访问受限）。
+# 本工作流保留为「仅手动触发」，如需云端跑请先将抓取逻辑替换为稳健版脚本。
+on:
+  workflow_dispatch:
+    inputs:
+      force:
+        description: "强制更新（跳过日期检查）"
+        type: boolean
+        default: false
+
+jobs:
+  update-predictions:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: 检出仓库
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 设置 Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: 安装依赖
+        run: |
+          pip install --upgrade pip
+          pip install akshare pandas numpy chinese-calendar
+
+      - name: 运行预测更新脚本
+        id: predictions
+        run: python scripts/update_predictions.py
+        env:
+          FORCE_UPDATE: ${{ github.event.inputs.force || 'false' }}
+
+      - name: 提交并推送更新
+        run: |
+          if git diff --quiet && [ -z "$(git ls-files --others --exclude-standard)" ]; then
+            echo "没有变化，跳过推送"
+          else
+            git config user.name "prediction-bot"
+            git config user.email "bot@preset-rate-research"
+            git add data/bond_yields.json data/predictions.json logs/ || true
+            git commit -m "自动更新: $(date +%Y-%m-%d_%H:%M) - 预测值更新" || echo "无变更可提交"
+            git push || echo "推送失败"
+            echo "推送完成"
+          fi

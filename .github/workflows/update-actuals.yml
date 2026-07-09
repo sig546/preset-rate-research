@@ -1,0 +1,57 @@
+name: 更新预定利率研究值（实际值+平安公告检核）
+
+# 注意：定时数据更新已改为「本地 WorkBuddy 定时任务」承载，本工作流保留为「仅手动触发」。
+on:
+  workflow_dispatch:
+    # 支持手动触发
+    inputs:
+      force:
+        description: "强制更新（跳过窗口期检查）"
+        type: boolean
+        default: false
+
+jobs:
+  update-actuals:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: 检出仓库
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 设置 Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: 安装依赖
+        run: |
+          pip install --upgrade pip
+          pip install duckduckgo_search beautifulsoup4 requests
+
+      - name: 运行实际值更新脚本
+        id: actuals
+        run: python scripts/update_actuals.py
+        env:
+          FORCE_UPDATE: ${{ github.event.inputs.force || 'false' }}
+
+      - name: 运行平安人寿公告检核
+        id: pingan
+        run: python scripts/check_pingan.py
+        continue-on-error: true
+
+      - name: 提交并推送所有更新
+        run: |
+          if git diff --quiet && [ -z "$(git ls-files --others --exclude-standard)" ]; then
+            echo "没有变化，跳过推送"
+          else
+            git config user.name "prediction-bot"
+            git config user.email "bot@preset-rate-research"
+            git add data/actuals.json data/pingan_announcements.json logs/ || true
+            git commit -m "自动更新: $(date +%Y-%m-%d_%H:%M) - 研究值及平安公告检核" || echo "无变更可提交"
+            git push || echo "推送失败（可能无变更）"
+            echo "推送完成"
+          fi

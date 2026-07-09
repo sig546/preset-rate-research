@@ -1,0 +1,25 @@
+{
+  "last_checked": null,
+  "source_page": "https://life.pingan.com/p/#/list-page?disclosureChannel=ilifeInfoDisclosure&disclosureName=产品预定利率公告&disclosureId=e594db5b25bf4b5e9e758cacf64a289f",
+  "announcements": [
+    {
+      "id": "2025-01-10",
+      "title": "平安人寿关于人身保险产品预定利率的公告",
+      "date": "2025-01-10",
+      "product_type": "普通型",
+      "max_rate": 2.50,
+      "effective_date": "2025-01-10",
+      "source_url": ""
+    },
+    {
+      "id": "2025-07-25",
+      "title": "平安人寿关于人身保险产品预定利率的公告",
+      "date": "2025-07-25",
+      "product_type": "普通型",
+      "max_rate": 2.00,
+      "effective_date": "2025-09-01",
+      "note": "公司将于2025年8月31日24时起不再接受超过2.0%的投保申请",
+      "source_url": "https://finance.sina.com.cn/roll/2025-07-25/doc-infhsrzr1778115.shtml"
+    }
+  ]
+}

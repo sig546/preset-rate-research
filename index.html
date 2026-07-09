@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>预定利率研究值 - 历史数据·预测·触发分析</title>
+    <style>
+    [id*="codebuddy"], [class*="codebuddy"], [id*="powered"], [class*="powered"],
+    [id*="watermark"], [class*="watermark"], [data-platform], [data-powered-by] {
+        display: none !important; visibility: hidden !important; opacity: 0 !important;
+    }
+    </style>
+    <script>
+    (function(){
+        function clean(){
+            document.querySelectorAll('*').forEach(function(el){
+                var id=(el.id||'').toLowerCase(),cls=(typeof el.className==='string'?el.className:'').toLowerCase();
+                if(id.indexOf('codebuddy')!==-1||cls.indexOf('codebuddy')!==-1){el.remove();return;}
+                if(el.children.length===0&&el.textContent&&el.textContent.toLowerCase().indexOf('codebuddy')!==-1){el.remove();}
+            });
+        }
+        if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',clean);}else{clean();}
+        new MutationObserver(function(m){m.forEach(function(mu){mu.addedNodes.forEach(function(n){
+            if(n.nodeType===1){var t=(n.textContent||'').toLowerCase(),id=(n.id||'').toLowerCase(),cls=(typeof n.className==='string'?n.className:'').toLowerCase();
+            if(t.indexOf('codebuddy')!==-1||id.indexOf('codebuddy')!==-1||cls.indexOf('codebuddy')!==-1){n.remove();}}
+        });});}).observe(document.documentElement,{childList:true,subtree:true});
+    })();
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <style>
+        :root {
+            --primary: #2563eb; --primary-light: #dbeafe;
+            --success: #10b981; --success-light: #d1fae5;
+            --warning: #f59e0b; --warning-light: #fef3c7;
+            --danger: #ef4444;  --danger-light: #fee2e2;
+            --bg: #f8fafc; --card: #ffffff;
+            --text: #1e293b; --text-secondary: #64748b; --border: #e2e8f0;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; }
+        .container { max-width: 1280px; margin: 0 auto; padding: 1.5rem; }
+        .page-header { background: linear-gradient(135deg, var(--primary), #3b82f6); color: white; padding: 2rem 2.5rem; border-radius: 16px; margin-bottom: 1.5rem; box-shadow: 0 4px 24px rgba(37,99,235,0.25); position: relative; }
+        .page-header h1 { font-size: 2rem; font-weight: 700; }
+        .page-header .sub { font-size: 0.95rem; opacity: 0.85; margin-top: 0.25rem; }
+        .page-header .meta { font-size: 0.8rem; opacity: 0.65; margin-top: 0.5rem; }
+        .btn-update { position: absolute; top: 1.5rem; right: 2rem; display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.45rem 0.9rem; background: rgba(255,255,255,0.2); color: white; text-decoration: none; border-radius: 8px; font-size: 0.82rem; font-weight: 500; border: 1px solid rgba(255,255,255,0.35); transition: all 0.2s; }
+        .btn-update:hover { background: rgba(255,255,255,0.3); border-color: rgba(255,255,255,0.5); }
+        .metrics-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+        .metric-card { background: var(--card); border-radius: 12px; padding: 1.25rem 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.06); border: 1px solid var(--border); text-align: center; position: relative; }
+        .metric-card .label { font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.4rem; }
+        .metric-card .value { font-size: 2.25rem; font-weight: 700; }
+        .metric-card .value.blue { color: var(--primary); } .metric-card .value.green { color: var(--success); } .metric-card .value.orange { color: var(--warning); } .metric-card .value.red { color: var(--danger); }
+        .metric-card .desc { font-size: 0.78rem; color: var(--text-secondary); margin-top: 0.3rem; }
+        .metric-card .tag { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 0.72rem; font-weight: 600; margin-top: 0.4rem; }
+        .tag-blue { background: var(--primary-light); color: #1e40af; } .tag-green { background: var(--success-light); color: #065f46; } .tag-red { background: var(--danger-light); color: #991b1b; } .tag-yellow { background: var(--warning-light); color: #92400e; }
+        .section { background: var(--card); border-radius: 12px; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.06); border: 1px solid var(--border); margin-bottom: 1.25rem; }
+        .section h2 { font-size: 1.15rem; color: var(--text); margin-bottom: 1rem; padding-bottom: 0.6rem; border-bottom: 2px solid var(--border); display: flex; align-items: center; gap: 0.5rem; }
+        .tabs { display: flex; gap: 0.25rem; margin-bottom: 1rem; border-bottom: 2px solid var(--border); }
+        .tab { padding: 0.5rem 1rem; background: none; border: none; font-size: 0.9rem; font-weight: 500; color: var(--text-secondary); cursor: pointer; border-radius: 6px 6px 0 0; transition: all 0.15s; }
+        .tab:hover { background: var(--bg); } .tab.active { background: var(--primary); color: white; }
+        .tab-content { display: none; } .tab-content.active { display: block; }
+        .chart-wrap { position: relative; height: 420px; }
+        .tbl { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+        .tbl th, .tbl td { padding: 0.65rem 0.8rem; text-align: center; border-bottom: 1px solid var(--border); }
+        .tbl th { background: #f1f5f9; font-weight: 600; color: var(--text-secondary); font-size: 0.78rem; white-space: nowrap; }
+        .tbl tr:hover { background: #f8fafc; }
+        .tbl .hl { font-weight: 600; } .tbl .up { color: var(--danger); font-weight: 600; } .tbl .dn { color: var(--success); font-weight: 600; } .tbl .pred { color: var(--warning); } .tbl .actual { color: var(--primary); }
+        .pill { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 0.7rem; font-weight: 600; }
+        .pill-actual { background: var(--primary-light); color: #1e40af; } .pill-pred { background: var(--warning-light); color: #92400e; }
+        .info { padding: 0.9rem 1rem; border-radius: 8px; margin-bottom: 0.75rem; font-size: 0.88rem; }
+        .info.blue { background: var(--primary-light); border-left: 4px solid var(--primary); }
+        .info.yellow { background: var(--warning-light); border-left: 4px solid var(--warning); }
+        .info.green { background: var(--success-light); border-left: 4px solid var(--success); }
+        .info.red { background: var(--danger-light); border-left: 4px solid var(--danger); }
+        .info strong { display: block; margin-bottom: 0.25rem; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+        @media (max-width:768px){ .grid-2 { grid-template-columns: 1fr; } }
+        .cols-2 { display: grid; grid-template-columns: 2fr 1fr; gap: 1.25rem; }
+        @media (max-width:960px){ .cols-2 { grid-template-columns: 1fr; } }
+        .gap-bar-track { height: 8px; background: #e5e7eb; border-radius: 4px; position: relative; }
+        .gap-bar-fill { height: 100%; border-radius: 4px; transition: width 0.3s; }
+        .gap-bar-fill.safe { background: linear-gradient(90deg, #10b981, #34d399); }
+        .gap-bar-fill.warn { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+        .gap-bar-fill.danger { background: linear-gradient(90deg, #ef4444, #f87171); }
+        .tl-mini { position: relative; padding-left: 1.25rem; }
+        .tl-mini::before { content: ''; position: absolute; left: 5px; top: 0; bottom: 0; width: 2px; background: var(--border); }
+        .tl-item { position: relative; padding: 0.25rem 0 0.75rem 1rem; font-size: 0.85rem; }
+        .tl-item::before { content: ''; position: absolute; left: -1.15rem; top: 0.45rem; width: 10px; height: 10px; border-radius: 50%; background: var(--primary); border: 2px solid white; box-shadow: 0 0 0 2px var(--primary); }
+        .tl-item.trigger::before { background: var(--danger); box-shadow: 0 0 0 2px var(--danger); }
+        .tl-item .date { font-size: 0.75rem; color: var(--text-secondary); }
+        .footer { text-align: center; padding: 1.5rem; color: var(--text-secondary); font-size: 0.8rem; border-top: 1px solid var(--border); margin-top: 1rem; }
+        .btn-link { display: inline-block; padding: 0.5rem 1rem; background: var(--primary); color: white; text-decoration: none; border-radius: 6px; font-size: 0.85rem; font-weight: 500; }
+        .btn-link:hover { opacity: 0.9; }
+        .loading-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.5); z-index: 9999; justify-content: center; align-items: center; }
+        .loading-spinner { width: 48px; height: 48px; border: 4px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+<div class="container">
+
+<!-- ====== HEADER ====== -->
+<div class="page-header">
+    <a href="https://github.com/sig546/preset-rate-research/actions/workflows/update-actuals.yml"
+       class="btn-update" target="_blank" title="手动触发数据更新（需登录 GitHub）">
+        🔄 更新数据
+    </a>
+    <h1>📊 预定利率研究值</h1>
+    <p class="sub">普通型人身保险产品预定利率研究值 · 历史数据 · 模型预测 · 调整触发分析</p>
+    <p class="meta" id="headerMeta">数据加载中…</p>
+</div>
+
+<!-- ====== METRIC CARDS ====== -->
+<div class="metrics-row">
+    <div class="metric-card">
+        <div class="label">最新公布研究值</div>
+        <div class="value blue" id="cardLatestValue">--</div>
+        <div class="desc" id="cardLatestDesc">--</div>
+        <span class="tag tag-blue">实际值</span>
+    </div>
+    <div class="metric-card">
+        <div class="label">预定利率最高值</div>
+        <div class="value green" id="cardMaxRate">--</div>
+        <div class="desc" id="cardMaxRateDesc">普通型产品</div>
+        <span class="tag tag-green">当前上限</span>
+    </div>
+    <div class="metric-card">
+        <div class="label">最高值 - 研究值</div>
+        <div class="value orange" id="cardGap">--</div>
+        <div class="desc" id="cardGapDesc">--</div>
+        <span class="tag tag-yellow" id="cardGapTag">--</span>
+    </div>
+    <div class="metric-card">
+        <div class="label">下一期预测值</div>
+        <div class="value orange" id="cardNextPred">--</div>
+        <div class="desc" id="cardNextPredDesc">--</div>
+        <span class="tag tag-yellow">模型预测</span>
+    </div>
+</div>
+
+<!-- ====== MAIN CHART + SIDEBAR ====== -->
+<div class="cols-2">
+    <div class="section">
+        <h2>📈 研究值 & 普通型预定利率最高值对比（含预测）</h2>
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('chart')">走势图</button>
+            <button class="tab" onclick="switchTab('table')">数据表</button>
+        </div>
+        <div id="chart" class="tab-content active">
+            <div class="chart-wrap"><canvas id="mainChart"></canvas></div>
+        </div>
+        <div id="table" class="tab-content" style="max-height:480px;overflow-y:auto;">
+            <table class="tbl" id="dataTable"></table>
+        </div>
+    </div>
+
+    <div>
+        <div class="section">
+            <h2>⚡ 触发状态监测</h2>
+            <div id="triggerStatusBox"></div>
+            <div style="margin-top:0.75rem;">
+                <div style="display:flex;justify-content:space-between;font-size:0.78rem;margin-bottom:4px;">
+                    <span style="color:var(--success);">0 BP</span>
+                    <span style="color:var(--warning);">25 BP 触发线</span>
+                    <span style="color:var(--danger);">50 BP</span>
+                </div>
+                <div class="gap-bar-track">
+                    <div class="gap-bar-fill safe" id="gapBarFill" style="width:14%;"></div>
+                </div>
+                <div style="text-align:center;font-size:0.8rem;margin-top:4px;font-weight:600;color:var(--success);" id="gapBarLabel">
+                    当前 -- BP ↑ 安全区间
+                </div>
+            </div>
+            <div class="info yellow" style="margin-top:0.75rem;" id="predTriggerSummary">
+                <strong>⚠️ 预测各季度差值</strong>
+                <span id="predTriggerText">加载中…</span>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>⏱️ 关键事件</h2>
+            <div class="tl-mini" id="timeline"></div>
+        </div>
+    </div>
+</div>
+
+<!-- ====== PREDICTION TABLE ====== -->
+<div class="section">
+    <h2>🔮 未来4季度预测详情（平推法）</h2>
+    <table class="tbl" id="predTable"></table>
+    <div class="info blue" style="margin-top:1rem;" id="flatForwardInfo">
+        <strong>📐 平推假设</strong>
+        5年期LPR当前3.50%，六大行5年期定存当前1.30%，10年期国债最新1.7410%，未来无实际数据日期均沿用最新数值。
+    </div>
+    <div class="info green" style="margin-top:0.75rem;">
+        <strong>🔵 机构共识：年内触发调整概率极低</strong>
+        中泰证券、华创证券、国泰海通等多家机构一致认为：当前研究值与最高值仅差7BP，远低于25BP触发线，2026年全年不会触发预定利率上限的被动下调。<a href="prediction_views.html" target="_blank" style="color:var(--primary);font-weight:500;text-decoration:none;border-bottom:1px dashed var(--primary);">查看完整机构观点 →</a>
+    </div>
+</div>
+
+<!-- ====== CALCULATION + TRIGGER RULES ====== -->
+<div class="grid-2">
+    <div class="section">
+        <h2>🔢 计算公式 & 数据源</h2>
+        <div class="info blue">
+            <strong>预定利率研究值 = 分段系数调节( MIN(参考利率, 基础回报水平) )</strong>
+            <span style="font-family:monospace;font-size:0.78rem;">
+                <br>参考利率 = 6MMA[ (5Y LPR + 5Y定存利率) / 2 ]
+                <br>基础回报 = MIN( 国债MA250+利差250, 国债MA750+利差750 )
+            </span>
+        </div>
+        <div class="info blue"><strong>📈 5年期LPR</strong> 来源：中国货币网 · 当前 3.50%（2025-05-20起）</div>
+        <div class="info blue"><strong>🏦 六大行定存</strong> 来源：工农中建交邮官网 · 当前 1.30%（2025-05-20起）</div>
+        <div class="info blue"><strong>📊 10年期国债</strong> 来源：中国货币网日频（akshare）</div>
+        <div class="info green"><strong>✅ 信用债利差</strong> 改用 akshare 实时获取10Y国开债/进出口债日频收益率，不再使用静态利差</div>
+        <div style="margin-top:0.75rem;"><a href="formula_report.html" target="_blank" class="btn-link">查看完整计算公式报告 →</a></div>
+    </div>
+
+    <div class="section">
+        <h2>📜 监管触发规则</h2>
+        <p style="font-size:0.8rem;color:var(--text-secondary);margin-bottom:0.75rem;">依据：金寿险函〔2025〕10号 第三条(二)</p>
+        <div class="info red"><strong>⬇️ 下调触发</strong> 当最高值 <strong>连续2个季度</strong> 比研究值高 ≥ 25 BP，必须下调新产品预定利率最高值</div>
+        <div class="info green"><strong>⬆️ 上调触发</strong> 当最高值 <strong>连续2个季度</strong> 比研究值低 ≥ 25 BP，可适当上调（不超过研究值）</div>
+        <div class="info yellow"><strong>⚡ 紧急调整</strong> 市场利率或公司经营出现重大变化时，及时启动决策机制</div>
+        <div class="info red" style="margin-top:0.75rem;" id="triggerHistory"></div>
+        <div style="margin-top:0.75rem;"><a href="trigger_analysis_report.html" target="_blank" class="btn-link">查看完整触发分析报告 →</a></div>
+    </div>
+</div>
+
+<!-- Footer -->
+<div class="footer">
+    <p>数据来源：中国保险行业协会 · 平安人寿官网 · 中国货币网 · AkShare | 监管依据：金寿险函〔2025〕10号</p>
+    <p style="margin-top:0.25rem;">本页面仅供信息参考，不构成任何投资建议 · <span id="footerDate">报告生成时间：--</span></p>
+</div>
+
+</div><!-- /container -->
+
+<script>
+// ===== FALLBACK DATA (if JSON loading fails) =====
+const FALLBACK_ACTUALS = [
+    { quarter: "2024Q4", announced: "2025年1月", value: 2.34, max_rate: 2.50, change_bp: null, note: "首次披露（机制建立）" },
+    { quarter: "2025Q1", announced: "2025年4月", value: 2.13, max_rate: 2.50, change_bp: -21, note: "下调21BP" },
+    { quarter: "2025Q2", announced: "2025年7月", value: 1.99, max_rate: 2.50, change_bp: -14, note: "下调14BP；7/25公告触发下调" },
+    { quarter: "2025Q3", announced: "2025年10月", value: 1.90, max_rate: 2.00, change_bp: -9, note: "下调9BP；新上限9/1生效" },
+    { quarter: "2025Q4", announced: "2026年1月", value: 1.89, max_rate: 2.00, change_bp: -1, note: "下调1BP（四连降）" },
+    { quarter: "2026Q1", announced: "2026年4月", value: 1.93, max_rate: 2.00, change_bp: 4, note: "回升+4BP（首次上调）" }
+];
+
+const FALLBACK_PREDICTIONS = [
+    { quarter: "2026Q2", announced: "2026年7月", predicted_value: 1.9383, ref_rate: 2.4000, base_return: 1.9383, ma250_gov: 1.7997, ma750_gov: 2.0253, spread_250: 0.0912, spread_750: 0.1380, max_rate: 2.00, gap_bp: 6.2, trigger: false },
+    { quarter: "2026Q3", announced: "2026年10月", predicted_value: 1.9229, ref_rate: 2.4000, base_return: 1.9229, ma250_gov: 1.7843, ma750_gov: 1.9436, spread_250: 0.0912, spread_750: 0.1380, max_rate: 2.00, gap_bp: 7.7, trigger: false },
+    { quarter: "2026Q4", announced: "2027年1月", predicted_value: 1.8969, ref_rate: 2.4000, base_return: 1.8969, ma250_gov: 1.7583, ma750_gov: 1.8762, spread_250: 0.0912, spread_750: 0.1380, max_rate: 2.00, gap_bp: 10.3, trigger: false },
+    { quarter: "2027Q1", announced: "2027年4月", predicted_value: 1.8800, ref_rate: 2.4000, base_return: 1.8800, ma250_gov: 1.7414, ma750_gov: 1.8293, spread_250: 0.0912, spread_750: 0.1380, max_rate: 2.00, gap_bp: 12.0, trigger: false }
+];
+
+const TRIGGER_THRESHOLD = 0.25;
+let allQuarters = [];
+let predList = [];
+let mainChart = null;
+
+// ===== DATA LOADING =====
+async function loadData() {
+    let actuals = FALLBACK_ACTUALS;
+    let preds = FALLBACK_PREDICTIONS;
+    let loadedFromAPI = false;
+
+    try {
+        const [actualsRes, predsRes] = await Promise.all([
+            fetch('data/actuals.json?t=' + Date.now()).then(r => r.json()),
+            fetch('data/predictions.json?t=' + Date.now()).then(r => r.json())
+        ]);
+        if (actualsRes.actuals && actualsRes.actuals.length > 0) {
+            actuals = actualsRes.actuals;
+            loadedFromAPI = true;
+        }
+        if (predsRes.predictions && predsRes.predictions.length > 0) {
+            preds = predsRes.predictions;
+        }
+    } catch (e) {
+        console.warn('JSON loading failed, using fallback data:', e);
+    }
+
+    // Merge
+    allQuarters = [];
+    actuals.forEach(a => {
+        allQuarters.push({
+            q: a.quarter, announced: a.announced, value: a.value, maxRate: a.max_rate,
+            type: 'actual', note: a.note || '', change_bp: a.change_bp
+        });
+    });
+    preds.forEach(p => {
+        allQuarters.push({
+            q: p.quarter, announced: p.announced, value: p.predicted_value, maxRate: p.max_rate,
+            type: 'predicted', note: '预测（平推法）',
+            ref_rate: p.ref_rate, base_return: p.base_return,
+            ma250_gov: p.ma250_gov, ma750_gov: p.ma750_gov,
+            spread_250: p.spread_250, spread_750: p.spread_750
+        });
+    });
+    predList = preds;
+
+    // Compute gaps & triggers
+    let histTrigCount = 0;
+    allQuarters.forEach(d => {
+        d.gap = d.maxRate - d.value;
+        d.triggered = false;
+        if (d.gap >= TRIGGER_THRESHOLD) { histTrigCount++; }
+        else { histTrigCount = 0; }
+        if (histTrigCount >= 2) { d.triggered = true; }
+    });
+
+    // Update all UI
+    if (actuals.length > 0) {
+        updateMetricCards(actuals);
+        updateTriggerStatus();
+        updateTimeline();
+        updateTriggerHistory();
+    }
+    updatePredictionTable(preds);
+    updateMetaFooter(actuals, loadedFromAPI);
+    renderDataTable();
+    renderChart();
+}
+
+function updateMetaFooter(actuals, fromAPI) {
+    const last = actuals[actuals.length - 1];
+    const lastPred = predList.length > 0 ? predList[0].quarter : '--';
+    const lastPredEnd = predList.length > 0 ? predList[predList.length - 1].quarter : '--';
+    const src = fromAPI ? '（JSON自动加载）' : '（fallback兜底）';
+    document.getElementById('headerMeta').textContent =
+        `最新数据：${last.announced}公布 | 预测范围：${lastPred}–${lastPredEnd} | 数据加载：${fromAPI ? '自动JSON' : '离线兜底'}`;
+    document.getElementById('footerDate').textContent =
+        '报告生成时间：' + new Date().toISOString().slice(0, 10);
+}
+
+// ===== METRIC CARDS =====
+function updateMetricCards(actuals) {
+    const latest = actuals[actuals.length - 1];
+    // Card 1
+    document.getElementById('cardLatestValue').textContent = latest.value.toFixed(2) + '%';
+    document.getElementById('cardLatestDesc').textContent = latest.quarter + '（' + latest.announced + '公布，累计第' + actuals.length + '次）';
+    // Card 2
+    document.getElementById('cardMaxRate').textContent = latest.max_rate.toFixed(2) + '%';
+    if (latest.max_rate === 2.00) {
+        document.getElementById('cardMaxRateDesc').textContent = '普通型产品（2025年9月1日起）';
+    } else {
+        document.getElementById('cardMaxRateDesc').textContent = '普通型产品';
+    }
+    // Card 3
+    const gapBP = Math.round((latest.max_rate - latest.value) * 100);
+    document.getElementById('cardGap').textContent = gapBP + ' BP';
+    const remaining = 25 - gapBP;
+    if (remaining > 0) {
+        document.getElementById('cardGapDesc').textContent = '距离下调触发线（25BP）差 ' + remaining + ' BP';
+        document.getElementById('cardGapTag').textContent = '差值不足';
+    } else {
+        document.getElementById('cardGapDesc').textContent = '差值 ≥ 25BP！';
+        document.getElementById('cardGapTag').textContent = '⚠️ 需关注';
+        document.getElementById('cardGapTag').className = 'tag tag-red';
+    }
+    // Card 4
+    if (predList.length > 0) {
+        const next = predList[0];
+        document.getElementById('cardNextPred').textContent = next.predicted_value.toFixed(4) + '%';
+        document.getElementById('cardNextPredDesc').textContent = next.quarter + '（' + next.announced + '公布）';
+    }
+}
+
+// ===== TRIGGER STATUS =====
+function updateTriggerStatus() {
+    if (allQuarters.length === 0) return;
+    const latest = allQuarters.filter(d => d.type === 'actual').pop();
+    const gapBP = Math.round(latest.gap * 100);
+    const triggered = gapBP >= 25;
+
+    const box = document.getElementById('triggerStatusBox');
+    if (triggered) {
+        box.innerHTML = `<div class="info red"><strong>⚠️ 触发预警</strong>最高值（${latest.maxRate.toFixed(2)}%）- 研究值（${latest.value.toFixed(2)}%）= ${gapBP} BP，已达到25BP触发线</div>`;
+    } else {
+        box.innerHTML = `<div class="info green"><strong>当前：未触发调整</strong>最高值（${latest.maxRate.toFixed(2)}%）- 研究值（${latest.value.toFixed(2)}%）= ${gapBP} BP，远低于25BP触发线</div>`;
+    }
+
+    // Gap bar
+    const pct = Math.min(gapBP / 50 * 100, 100);
+    const fill = document.getElementById('gapBarFill');
+    fill.style.width = pct + '%';
+    fill.className = 'gap-bar-fill ' + (gapBP < 15 ? 'safe' : gapBP < 25 ? 'warn' : 'danger');
+    document.getElementById('gapBarLabel').textContent = '当前 ' + gapBP + ' BP ↑ ' + (gapBP < 15 ? '安全区间' : gapBP < 25 ? '关注区间' : '触发区间');
+    document.getElementById('gapBarLabel').style.color = gapBP < 15 ? 'var(--success)' : gapBP < 25 ? 'var(--warning)' : 'var(--danger)';
+
+    // Prediction summary
+    const preds = allQuarters.filter(d => d.type === 'predicted');
+    const parts = preds.map(p => p.q + ': ' + Math.round(p.gap * 100) + ' BP');
+    const anyTrig = preds.some(p => p.gap >= TRIGGER_THRESHOLD);
+    document.getElementById('predTriggerText').innerHTML =
+        parts.join(' | ') + '<br><span style="color:' + (anyTrig ? 'var(--danger)' : 'var(--success)') + ';">→ 未来' + preds.length + '季度均' + (anyTrig ? '可能触' : '不触') + '发调整</span>';
+}
+
+// ===== TIMELINE =====
+function updateTimeline() {
+    const tl = document.getElementById('timeline');
+    const events = [];
+    // Generate from actuals
+    allQuarters.filter(d => d.type === 'actual').forEach(d => {
+        if (d.change_bp !== null && d.change_bp > 0) {
+            events.push({ date: d.announced, cls: '', title: '首次回升', desc: '研究值回升至 ' + d.value.toFixed(2) + '%（+' + d.change_bp + ' BP），止跌反弹' });
+        }
+        // Detect trigger
+        if (d.triggered) {
+            events.push({ date: '2025年7月25日公告', cls: 'trigger', title: '触发下调', desc: '研究值连续2季低25BP+，最高值降至2.00%（9月1日生效）' });
+        }
+    });
+    // Mechanism established
+    events.push({ date: '2025年1月', cls: '', title: '机制建立', desc: '金寿险函〔2025〕10号发布，首次披露研究值 2.34%' });
+
+    // Dedup and reverse order
+    const seen = new Set();
+    const unique = events.filter(e => { const k = e.date + e.title; if (seen.has(k)) return false; seen.add(k); return true; });
+    unique.sort((a, b) => {
+        const da = a.date.replace(/[^0-9]/g, '');
+        const db = b.date.replace(/[^0-9]/g, '');
+        return db.localeCompare(da);
+    });
+
+    tl.innerHTML = unique.map(e =>
+        `<div class="tl-item${e.cls ? ' ' + e.cls : ''}"><div class="date">${e.date}</div><strong>${e.title}</strong> · ${e.desc}</div>`
+    ).join('');
+}
+
+// ===== TRIGGER HISTORY =====
+function updateTriggerHistory() {
+    const el = document.getElementById('triggerHistory');
+    const actuals = allQuarters.filter(d => d.type === 'actual');
+    let histCount = 0;
+    let lines = [];
+    actuals.forEach(d => {
+        const gapBP = Math.round(d.gap * 100);
+        if (gapBP >= 25) {
+            histCount++;
+            if (histCount >= 2) {
+                lines.push(d.q + '：差值' + gapBP + 'BP → 第' + histCount + '季 ≥25BP → <strong>触发下调</strong>');
+            } else {
+                lines.push(d.q + '：差值' + gapBP + 'BP → 第' + histCount + '季 ≥25BP');
+            }
+        } else {
+            histCount = 0;
+        }
+    });
+    el.innerHTML = '<strong>📋 历史触发记录</strong><span style="font-size:0.82rem;"><br>' +
+        (lines.length > 0 ? lines.join('<br>') + '<br>2025年7月25日公告，9月1日起最高值 2.50% → 2.00%' : '尚无触发记录') +
+        '</span>';
+}
+
+// ===== PREDICTION TABLE =====
+function updatePredictionTable(preds) {
+    const tbody = document.getElementById('predTable');
+    let html = `<thead><tr>
+        <th>季度</th><th>公布时间</th><th>预测值(%)</th>
+        <th>参考利率(%)</th><th>基础回报(%)</th>
+        <th>MA250(%)</th><th>MA750(%)</th>
+        <th>最高值-预测(BP)</th><th>触发</th>
+    </tr></thead><tbody>`;
+
+    preds.forEach(p => {
+        html += `<tr>
+            <td class="hl">${p.quarter}</td>
+            <td>${p.announced}</td>
+            <td class="hl pred">${p.predicted_value.toFixed(4)}</td>
+            <td>${(p.ref_rate || 2.4).toFixed(4)}</td>
+            <td>${(p.base_return || p.predicted_value).toFixed(4)}</td>
+            <td>${(p.ma250_gov || '--').toFixed(4)}</td>
+            <td>${(p.ma750_gov || '--').toFixed(4)}</td>
+            <td><span style="color:var(--success);">${p.gap_bp.toFixed(1)}</span></td>
+            <td><span class="pill pill-pred">${p.trigger ? '⚠️' : '否'}</span></td>
+        </tr>`;
+    });
+    html += '</tbody>';
+    tbody.innerHTML = html;
+
+    // Update flat-forward info
+    if (preds.length > 0) {
+        const p = preds[0];
+        document.getElementById('flatForwardInfo').innerHTML =
+            `<strong>📐 平推假设</strong>5年期LPR当前3.50%，六大行5年期定存当前1.30%，未来无实际数据日期均沿用最新数值。` +
+            `<br><span style="font-size:0.8rem;color:var(--text-secondary);">利差来源：国开债/进出口债日频数据（akshare），MA250利差=${(p.spread_250||0.0912).toFixed(4)}%，MA750利差=${(p.spread_750||0.1380).toFixed(4)}%</span>`;
+    }
+}
+
+// ===== DATA TABLE (Chart tab) =====
+function renderDataTable() {
+    const tbody = document.getElementById('dataTable');
+    let html = `<thead><tr>
+        <th>季度</th><th>公布时间</th><th>研究值(%)</th><th>环比(BP)</th>
+        <th>最高值(%)</th><th>差值(BP)</th><th>类型</th><th>触发</th><th>说明</th>
+    </tr></thead><tbody>`;
+
+    allQuarters.forEach((d, i) => {
+        const prev = i > 0 ? allQuarters[i-1].value : null;
+        const change = prev !== null ? Math.round((d.value - prev) * 100) : null;
+        const chCls = change !== null ? (change > 0 ? 'up' : change < 0 ? 'dn' : '') : '';
+        const chSign = change !== null ? (change > 0 ? '+' : '') : '';
+        const gapBP = Math.round(d.gap * 100);
+        const gapCls = gapBP >= 25 ? 'up' : '';
+        const valCls = d.type === 'predicted' ? 'pred' : 'actual';
+        const pill = d.type === 'predicted' ? 'pill-pred' : 'pill-actual';
+        const pillText = d.type === 'predicted' ? '预测' : '实际';
+
+        // Trigger column
+        let trigText = '否';
+        if (d.triggered) {
+            trigText = '<span style="color:var(--danger);font-weight:600;">🔴 触发</span>';
+        } else if (d.gap >= TRIGGER_THRESHOLD && d.type === 'actual') {
+            // Count consecutive
+            let cnt = 0;
+            for (let j = i; j >= 0; j--) {
+                if (allQuarters[j].type !== 'actual') continue;
+                if (allQuarters[j].gap >= TRIGGER_THRESHOLD) cnt++;
+                else break;
+            }
+            if (cnt === 1) trigText = '<span style="color:var(--warning);">⚠️ 第1季</span>';
+        }
+
+        const note = d.note || '';
+
+        html += `<tr>
+            <td class="hl">${d.q}</td>
+            <td>${d.announced}</td>
+            <td class="hl ${valCls}">${d.value.toFixed(d.type === 'predicted' ? 4 : 2)}</td>
+            <td class="${chCls}">${change !== null ? chSign + change : '-'}</td>
+            <td>${d.maxRate.toFixed(2)}</td>
+            <td class="${gapCls}">${gapBP}</td>
+            <td><span class="pill ${pill}">${pillText}</span></td>
+            <td>${trigText}</td>
+            <td style="font-size:0.8rem;color:var(--text-secondary);text-align:left;">${note}</td>
+        </tr>`;
+    });
+
+    html += '</tbody>';
+    tbody.innerHTML = html;
+}
+
+// ===== CHART =====
+function renderChart() {
+    if (mainChart) mainChart.destroy();
+    const ctx = document.getElementById('mainChart').getContext('2d');
+
+    const labels = allQuarters.map(d => d.q);
+    const values = allQuarters.map(d => d.value);
+    const maxValues = allQuarters.map(d => d.maxRate);
+
+    const pointColors = allQuarters.map(d => d.type === 'predicted' ? '#f59e0b' : '#2563eb');
+    const pointBgColors = allQuarters.map(d => d.type === 'predicted' ? '#fef3c7' : '#ffffff');
+    const pointStyles = allQuarters.map(d => d.type === 'predicted' ? 'rectRounded' : 'circle');
+    const pointRadii = allQuarters.map(d => d.type === 'predicted' ? 6 : 5);
+    const pointBorders = allQuarters.map(d => d.type === 'predicted' ? 2.5 : 2);
+
+    // Max rate points: only show where rate changes
+    const maxPts = maxValues.map((v, i) => {
+        if (i === 0) return v === 2.50 ? 4 : 4;
+        return v !== maxValues[i-1] ? 4 : 0;
+    });
+
+    mainChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: '普通型预定利率最高值(%)',
+                    data: maxValues,
+                    borderColor: '#ef4444',
+                    backgroundColor: 'rgba(239,68,68,0.06)',
+                    borderWidth: 2.5, borderDash: [6, 3], fill: false, stepped: true,
+                    pointRadius: maxPts, pointBackgroundColor: '#ef4444', pointBorderColor: '#ef4444',
+                    order: 2,
+                },
+                {
+                    label: '预定利率研究值(%)',
+                    data: values,
+                    borderColor: '#2563eb',
+                    backgroundColor: 'rgba(37,99,235,0.06)',
+                    borderWidth: 3, fill: true, tension: 0.3,
+                    pointBackgroundColor: pointBgColors, pointBorderColor: pointColors,
+                    pointRadius: pointRadii, pointBorderWidth: pointBorders, pointStyle: pointStyles,
+                    segment: {
+                        borderColor: ctx => {
+                            const i = ctx.p0DataIndex;
+                            if (i >= 0 && i < allQuarters.length) {
+                                return allQuarters[i].type === 'predicted' || (i+1 < allQuarters.length && allQuarters[i+1].type === 'predicted') ? '#f59e0b' : '#2563eb';
+                            }
+                            return undefined;
+                        },
+                        borderDash: ctx => {
+                            const i = ctx.p0DataIndex;
+                            if (i >= 0 && i < allQuarters.length) {
+                                return allQuarters[i].type === 'predicted' || (i+1 < allQuarters.length && allQuarters[i+1].type === 'predicted') ? [6,3] : undefined;
+                            }
+                            return undefined;
+                        }
+                    },
+                    order: 0,
+                },
+            ]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: ctx => ctx.dataset.label + ': ' + ctx.parsed.y.toFixed(4) + '%',
+                        afterBody: ctx => {
+                            const d = allQuarters[ctx[0].dataIndex];
+                            return ['差值: ' + Math.round(d.gap*100) + ' BP', d.type === 'predicted' ? ' [模型预测]' : ' [实际公布]'];
+                        }
+                    }
+                },
+                legend: { position: 'bottom', labels: { usePointStyle: true, padding: 20, font: { size: 11 } } }
+            },
+            scales: {
+                y: {
+                    title: { display: true, text: '利率 (%)', font: { size: 11 } },
+                    min: 1.60, max: 2.70,
+                    ticks: { stepSize: 0.1, callback: v => v.toFixed(2) + '%' },
+                    grid: { color: 'rgba(0,0,0,0.04)' }
+                },
+                x: { grid: { display: false } }
+            }
+        }
+    });
+}
+
+// ===== TABS =====
+function switchTab(tabId) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    event.target.classList.add('active');
+    document.getElementById(tabId).classList.add('active');
+}
+
+// ===== INIT =====
+document.addEventListener('DOMContentLoaded', loadData);
+</script>
+</body>
+</html>

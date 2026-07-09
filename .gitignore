@@ -1,0 +1,47 @@
+# WorkBuddy internal files
+.workbuddy/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+.env
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Temporary files
+*.tmp
+*.bak
+*.log
+
+# Excel temp files
+~$*.xlsx
+
+# Deployment temp files
+deploy_noninteractive.py
+upload_to_github.py
+upload_contents_api.py
+nul
+
+# Package output
+preset_rate_research_*.zip
+
+# Data backups (本地备份，不入库)
+data/*.backup_*.json
+
+# Auto-generated logs
+logs/

@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>预定利率研究值未来预测报告</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --secondary-color: #3b82f6;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --border-color: #e2e8f0;
+        }
+
+        * {
+            margin: 0;
+            padding:0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans SC", sans-serif;
+            background: var(--bg-color);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding: 2rem;
+            background: linear-gradient(135deg, #7c3aed, #a855f7);
+            color: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(124, 58, 237, 0.3);
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .section {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--border-color);
+        }
+
+        .section h2 {
+            font-size: 1.75rem;
+            color: var(--primary-color);
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .assumption-box {
+            background: #fef3c7;
+            border-left: 4px solid var(--warning-color);
+            padding: 1.5rem;
+            border-radius: 0 8px 8px 0;
+            margin-bottom: 1.5rem;
+        }
+
+        .assumption-box h3 {
+            color: #92400e;
+            margin-bottom: 0.75rem;
+        }
+
+        .assumption-box ul {
+            margin-left: 1.5rem;
+            color: #78350f;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+        }
+
+        table th,
+        table td {
+            padding: 0.75rem 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        table th {
+            background: #f1f5f9;
+            font-weight: 600;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        table tr:hover {
+            background: #f8fafc;
+        }
+
+        .predicted-value {
+            font-weight: 700;
+            color: #7c3aed;
+            font-family: "SF Mono", Monaco, monospace;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 400px;
+            margin: 1.5rem 0;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+
+        .info-card {
+            background: #f8fafc;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1.25rem;
+            text-align: center;
+        }
+
+        .info-card h4 {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .info-card .value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        .status-predicted {
+            background: #ede9fe;
+            color: #5b21b;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            margin-top: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            header h1 {
+                font-size: 1.75rem;
+            }
+
+            .chart-container {
+                height: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🔮 预定利率研究值未来预测报告</h1>
+            <p>基于当前数据平推方法的未来4个季度预测</p>
+            <p style="font-size: 0.9rem; margin-top: 0.5rem; opacity: 0.8;">
+                报告日期：2026年7月2日 | 预测方法：平推假设
+            </p>
+        </header>
+
+        <!-- 预测假设说明 -->
+        <div class="section">
+            <h2>📋 预测假设说明</h2>
+            <div class="assumption-box">
+                <h3>⚠️ 平推假设（Flat Push Assumption）</h3>
+                <p>本报告采用<strong>"平推"</strong>方法，即假设未来利率保持当前水平不变：</p>
+                <ul style="margin-top: 0.75rem;">
+                    <li><strong>5年期LPR：</strong>保持当前值 3.50% 不变（自2025年5月20日起）</li>
+                    <li><strong>六大行5年期定存利率：</strong>保持当前值 1.30% 不变（自2025年5月20日起）</li>
+                    <li><strong>10年期国债收益率：</strong>保持当前值 1.7410% 不变（2026年7月2日最新数据）</li>
+                    <li><strong>信用债利差：</strong>继续使用2024年底历史利差近似值</li>
+                </ul>
+                <p style="margin-top: 1rem; color: var(--danger-color); font-weight: 500;">
+                    ⚠️ 重要说明：实际市场中利率会持续变化，本预测仅反映在当前利率水平不变的情况下的理论值。
+                </p>
+            </div>
+        </div>
+
+        <!-- 预测结果汇总 -->
+        <div class="section">
+            <h2>📊 未来4个季度预测结果</h2>
+            
+            <div class="info-grid">
+                <div class="info-card">
+                    <h4>2026Q3（最近）</h4>
+                    <div class="value">1.9229%</div>
+                    <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.25rem;">2026年10月公布</p>
+                </div>
+                <div class="info-card">
+                    <h4>2026Q4</h4>
+                    <div class="value">1.8969%</div>
+                    <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.25rem;">2027年1月公布</p>
+                </div>
+                <div class="info-card">
+                    <h4>2027Q1</h4>
+                    <div class="value">1.8800%</div>
+                    <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.25rem;">2027年4月公布</p>
+                </div>
+                <div class="info-card">
+                    <h4>2027Q2（最远）</h4>
+                    <div class="value">1.8796%</div>
+                    <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.25rem;">2027年7月公布</p>
+                </div>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>预测季度</th>
+                        <th>计算日期</th>
+                        <th>公布时间</th>
+                        <th>参考利率(%)</th>
+                        <th>基础回报水平(%)</th>
+                        <th>预测值(%)</th>
+                        <th>趋势</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>2026Q3</td>
+                        <td>2026-09-30</td>
+                        <td>2026年10月</td>
+                        <td>2.4000</td>
+                        <td>1.9229</td>
+                        <td class="predicted-value">1.9229</td>
+                        <td>↓ 基准</td>
+                    </tr>
+                    <tr>
+                        <td>2026Q4</td>
+                        <td>2026-12-31</td>
+                        <td>2027年1月</td>
+                        <td>2.4000</td>
+                        <td>1.8969</td>
+                        <td class="predicted-value">1.8969</td>
+                        <td>↓ -2.6 BP</td>
+                    </tr>
+                    <tr>
+                        <td>2027Q1</td>
+                        <td>2027-03-31</td>
+                        <td>2027年4月</td>
+                        <td>2.4000</td>
+                        <td>1.8800</td>
+                        <td class="predicted-value">1.8800</td>
+                        <td>↓ -1.7 BP</td>
+                    </tr>
+                    <tr>
+                        <td>2027Q2</td>
+                        <td>2027-06-30</td>
+                        <td>2027年7月</td>
+                        <td>2.4000</td>
+                        <td>1.8796</td>
+                        <td class="predicted-value">1.8796</td>
+                        <td>↓ -0.0 BP</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="assumption-box" style="margin-top: 1.5rem;">
+                <h3>📈 趋势分析</h3>
+                <p><strong>总体趋势：</strong>在未来4个季度中，预测值呈现<strong>缓慢下降</strong>趋势，从1.9229%降至1.8796%，累计下降约4.3 BP。</p>
+                <p style="margin-top: 0.5rem;"><strong>原因解析：</strong></p>
+                <ul style="margin-top: 0.5rem;">
+                    <li>参考利率保持2.4000%不变（LPR和定存利率平推）</li>
+                    <li>基础回报水平缓慢下降：从1.9229%降至1.8796%</li>
+                    <li>下降原因：10年期国债MA250和MA750随时间推移，高收益率的历史数据逐渐退出窗口，被当前较低的收益率（1.7410%）替代</li>
+                    <li>最终预定利率 = MIN(参考利率, 基础回报水平) = 基础回报水平（起决定性作用）</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 预测图表 -->
+        <div class="section">
+            <h2>📈 预测趋势图</h2>
+            <div class="chart-container">
+                <canvas id="predictionChart"></canvas>
+            </div>
+        </div>
+
+        <!-- 敏感性分析 -->
+        <div class="section">
+            <h2>🔍 敏感性分析</h2>
+            <p style="margin-bottom: 1rem;">分析参考利率变动对预测值的影响（以2026Q3为基准）：</p>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>情景</th>
+                        <th>LPR(%)</th>
+                        <th>定存利率(%)</th>
+                        <th>参考利率(%)</th>
+                        <th>预测值(%)</th>
+                        <th>较基准变化(BP)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>基准情景</td>
+                        <td>3.50</td>
+                        <td>1.30</td>
+                        <td>2.4000</td>
+                        <td class="predicted-value">1.9229</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td>LPR下调10BP</td>
+                        <td>3.40</td>
+                        <td>1.30</td>
+                        <td>2.3500</td>
+                        <td class="predicted-value">1.9229</td>
+                        <td>0.0</td>
+                    </tr>
+                    <tr>
+                        <td>LPR下调20BP</td>
+                        <td>3.30</td>
+                        <td>1.30</td>
+                        <td>2.3000</td>
+                        <td class="predicted-value">1.9229</td>
+                        <td>0.0</td>
+                    </tr>
+                    <tr>
+                        <td>定存下调10BP</td>
+                        <td>3.50</td>
+                        <td>1.20</td>
+                        <td>2.3500</td>
+                        <td class="predicted-value">1.9229</td>
+                        <td>0.0</td>
+                    </tr>
+                    <tr>
+                        <td>定存下调20BP</td>
+                        <td>3.50</td>
+                        <td>1.10</td>
+                        <td>2.3000</td>
+                        <td class="predicted-value">1.9229</td>
+                        <td>0.0</td>
+                    </tr>
+                    <tr>
+                        <td>LPR+定存各下调10BP</td>
+                        <td>3.40</td>
+                        <td>1.20</td>
+                        <td>2.3000</td>
+                        <td class="predicted-value">1.9229</td>
+                        <td>0.0</td>
+                    </tr>
+                    <tr>
+                        <td>LPR+定存各下调20BP</td>
+                        <td>3.30</td>
+                        <td>1.10</td>
+                        <td>2.2000</td>
+                        <td class="predicted-value">1.9229</td>
+                        <td>0.0</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="assumption-box" style="margin-top: 1.5rem; background: #dbeafe; border-left-color: var(--primary-color);">
+                <h3>💡 敏感性分析结论</h3>
+                <p><strong>关键发现：</strong>在当前市场条件下（基础回报水平 ≈ 1.92%），参考利率的变动<strong>不影响</strong>最终预测值。</p>
+                <p style="margin-top: 0.5rem;"><strong>原因：</strong></p>
+                <ul style="margin-top: 0.5rem;">
+                    <li>最终预定利率 = MIN(参考利率, 基础回报水平)</li>
+                    <li>当前参考利率（2.40%）> 基础回报水平（1.92%）</li>
+                    <li>因此，最终值 = 基础回报水平（1.92%）</li>
+                    <li>即使LPR或定存利率下调，只要参考利率仍 > 1.92%，最终值就不会变化</li>
+                </ul>
+                <p style="margin-top: 0.75rem; color: var(--primary-color); font-weight: 500;">
+                    📌 这意味着：未来预定利率研究值的变化主要取决于<strong>10年期国债收益率的走势</strong>，而非LPR或定存利率的调整。
+                </p>
+            </div>
+        </div>
+
+        <!-- 与历史数据对比 -->
+        <div class="section">
+            <h2>📜 与历史数据对比</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>季度</th>
+                        <th>类型</th>
+                        <th>公布时间</th>
+                        <th>研究值(%)</th>
+                        <th>环比变化</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>2025Q1</td>
+                        <td><span class="status-badge" style="background: #dbeafe; color: #1e40af;">实际</span></td>
+                        <td>2025年1月</td>
+                        <td>2.34</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td>2025Q2</td>
+                        <td><span class="status-badge" style="background: #dbeafe; color: #1e40af;">实际</span></td>
+                        <td>2025年4月</td>
+                        <td>2.13</td>
+                        <td>↓ -21 BP</td>
+                    </tr>
+                    <tr>
+                        <td>2025Q3</td>
+                        <td><span class="status-badge" style="background: #dbeafe; color: #1e40af;">实际</span></td>
+                        <td>2025年7月</td>
+                        <td>1.99</td>
+                        <td>↓ -14 BP</td>
+                    </tr>
+                    <tr>
+                        <td>2025Q4</td>
+                        <td><span class="status-badge" style="background: #dbeafe; color: #1e40af;">实际</span></td>
+                        <td>2025年10月</td>
+                        <td>1.90</td>
+                        <td>↓ -9 BP</td>
+                    </tr>
+                    <tr>
+                        <td>2026Q1</td>
+                        <td><span class="status-badge" style="background: #dbeafe; color: #1e40af;">实际</span></td>
+                        <td>2026年1月</td>
+                        <td>1.93</td>
+                        <td>↑ +4 BP</td>
+                    </tr>
+                    <tr>
+                        <td>2026Q2</td>
+                        <td><span class="status-badge" style="background: #dbeafe; color: #1e40af;">实际</span></td>
+                        <td>2026年4月</td>
+                        <td>1.93</td>
+                        <td>0 BP</td>
+                    </tr>
+                    <tr style="background: #faf5ff;">
+                        <td>2026Q3</td>
+                        <td><span class="status-badge status-predicted">预测</span></td>
+                        <td>2026年10月</td>
+                        <td class="predicted-value">1.9229</td>
+                        <td>↓ -0.7 BP</td>
+                    </tr>
+                    <tr style="background: #faf5ff;">
+                        <td>2026Q4</td>
+                        <td><span class="status-badge status-predicted">预测</span></td>
+                        <td>2027年1月</td>
+                        <td class="predicted-value">1.8969</td>
+                        <td>↓ -2.6 BP</td>
+                    </tr>
+                    <tr style="background: #faf5ff;">
+                        <td>2027Q1</td>
+                        <td><span class="status-badge status-predicted">预测</span></td>
+                        <td>2027年4月</td>
+                        <td class="predicted-value">1.8800</td>
+                        <td>↓ -1.7 BP</td>
+                    </tr>
+                    <tr style="background: #faf5ff;">
+                        <td>2027Q2</td>
+                        <td><span class="status-badge status-predicted">预测</span></td>
+                        <td>2027年7月</td>
+                        <td class="predicted-value">1.8796</td>
+                        <td>↓ -0.0 BP</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 免责声明 -->
+        <div class="section">
+            <div class="assumption-box" style="margin: 0; background: #fee2e2; border-left-color: var(--danger-color);">
+                <h3 style="color: #991b1b;">⚠️ 免责声明</h3>
+                <p style="color: #7f1d1d;">本报告仅供研究和参考使用，不构成任何投资或业务建议。实际预定利率研究值以中国保险行业协会官方公布为准。</p>
+                <p style="margin-top: 0.5rem; color: #7f1d1d;">预测结果基于"平推"假设，实际市场条件变化可能导致预测值偏差。使用者应结合最新市场数据自行判断。</p>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>计算脚本：<code>predict_future_quarters.py</code> | 数据更新至：2026年7月2日</p>
+            <p style="margin-top: 0.5rem;">© 2026 预定利率研究值分析项目</p>
+        </div>
+    </div>
+
+    <script>
+        // 历史数据 + 预测数据
+        const allData = [
+            { quarter: '2025Q1', date: '2025-01', value: 2.34, type: 'actual' },
+            { quarter: '2025Q2', date: '2025-04', value: 2.13, type: 'actual' },
+            { quarter: '2025Q3', date: '2025-07', value: 1.99, type: 'actual' },
+            { quarter: '2025Q4', date: '2025-10', value: 1.90, type: 'actual' },
+            { quarter: '2026Q1', date: '2026-01', value: 1.93, type: 'actual' },
+            { quarter: '2026Q2', date: '2026-04', value: 1.93, type: 'actual' },
+            { quarter: '2026Q3', date: '2026-10', value: 1.9229, type: 'predicted' },
+            { quarter: '2026Q4', date: '2027-01', value: 1.8969, type: 'predicted' },
+            { quarter: '2027Q1', date: '2027-04', value: 1.8800, type: 'predicted' },
+            { quarter: '2027Q2', date: '2027-07', value: 1.8796, type: 'predicted' }
+        ];
+
+        // 渲染图表
+        const ctx = document.getElementById('predictionChart').getContext('2d');
+        
+        const actualData = allData.filter(d => d.type === 'actual');
+        const predictedData = allData.filter(d => d.type === 'predicted');
+
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: allData.map(d => d.quarter),
+                datasets: [
+                    {
+                        label: '实际值',
+                        data: actualData.map(d => ({ x: d.quarter, y: d.value })),
+                        borderColor: '#2563eb',
+                        backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                        borderWidth: 3,
+                        pointBackgroundColor: '#2563eb',
+                        pointRadius: 6,
+                        pointHoverRadius: 8,
+                        fill: false,
+                        tension: 0.3
+                    },
+                    {
+                        label: '预测值',
+                        data: [
+                            { x: '2026Q2', y: 1.93 },  // 连接点
+                            ...predictedData.map(d => ({ x: d.quarter, y: d.value }))
+                        ],
+                        borderColor: '#7c3aed',
+                        backgroundColor: 'rgba(124, 58, 237, 0.1)',
+                        borderWidth: 3,
+                        pointBackgroundColor: '#7c3aed',
+                        pointRadius: 6,
+                        pointHoverRadius: 8,
+                        borderDash: [5, 5],
+                        fill: false,
+                        tension: 0.3
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top'
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        padding: 12,
+                        titleFont: { size: 14, weight: 'bold' },
+                        bodyFont: { size: 13 },
+                        callbacks: {
+                            label: function(context) {
+                                const item = allData.find(d => d.quarter === context.label);
+                                let label = `${item.quarter}: ${context.raw.y.toFixed(4)}%`;
+                                if (item.type === 'predicted') {
+                                    label += ' [预测]';
+                                }
+                                return label;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        min: 1.7,
+                        max: 2.5,
+                        ticks: {
+                            callback: function(value) {
+                                return value.toFixed(2) + '%';
+                            },
+                            stepSize: 0.1
+                        },
+                        title: {
+                            display: true,
+                            text: '预定利率研究值 (%)',
+                            font: { size: 12 }
+                        },
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
