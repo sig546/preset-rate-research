@@ -15,9 +15,13 @@
      （债券收益率叙述句、利差兜底等带有关键词的行被跳过，避免误报）
   2. 全仓库 HTML 不得再出现已知错误值（2026-07 分叉 bug 的过期值）。
   3. index.html 与 trigger_analysis_report.html 必须引用 predictions.json。
+  4. predictions.json 的 last_updated 距今不得超过 MAX_AGE_DAYS 天（默认 40，
+     可用环境变量 PRED_MAX_AGE_DAYS 覆盖），否则视为「数据源过期」而阻断发布——
+     防止上线几个月前的过期预测值（如 2026-07 雷同 1.8773 的旧文件）。
 
-退出码：发现分叉返回 1，否则返回 0。
+退出码：发现任一问题返回 1，否则返回 0。
 """
+import datetime
 import json
 import os
 import re
@@ -43,6 +47,31 @@ NARRATIVE_KW = ("国债", "LPR", "定存", "利差", "MA250", "MA750", "bond", "
 
 SSOT_PAGES = ("index.html", "trigger_analysis_report.html")
 
+# 预测数据源最大允许「年龄」（天）。超过则视为过期，CI 阻断发布。
+# 可用环境变量 PRED_MAX_AGE_DAYS 覆盖（本地演练或特殊豁免时临时调大）。
+MAX_AGE_DAYS = int(os.environ.get("PRED_MAX_AGE_DAYS", "40"))
+
+# 支持的 last_updated 时间格式（宽松解析）
+_DATE_FORMATS = (
+    "%Y-%m-%d %H:%M:%S",
+    "%Y-%m-%d %H:%M",
+    "%Y-%m-%d",
+    "%Y-%m-%dT%H:%M:%S",
+    "%Y-%m-%dT%H:%M:%SZ",
+)
+
+
+def _parse_dt(s):
+    for fmt in _DATE_FORMATS:
+        try:
+            return datetime.datetime.strptime(s, fmt)
+        except ValueError:
+            continue
+    try:
+        return datetime.datetime.fromisoformat(s.replace("Z", "+00:00"))
+    except ValueError:
+        return None
+
 
 def load_live_values():
     live = set()
@@ -55,6 +84,38 @@ def load_live_values():
         for a in d.get("actuals", []):
             live.add(f"{a['value']:.4f}")
     return live
+
+
+def check_pred_freshness(errors):
+    """规则 4：predictions.json 不得过期。"""
+    try:
+        with open(PRED_FILE, encoding="utf-8") as f:
+            d = json.load(f)
+    except FileNotFoundError:
+        errors.append("data/predictions.json 不存在，无法校验数据新鲜度")
+        return
+
+    lu = d.get("last_updated")
+    if not lu:
+        errors.append("data/predictions.json 缺少 last_updated 字段（无法判断数据新鲜度，阻断发布）")
+        return
+
+    dt = _parse_dt(lu)
+    if dt is None:
+        errors.append(f"data/predictions.json 的 last_updated 无法解析: {lu!r}")
+        return
+    if dt.tzinfo is not None:
+        dt = dt.replace(tzinfo=None)
+
+    age = (datetime.datetime.now() - dt).total_seconds() / 86400.0
+    if age > MAX_AGE_DAYS:
+        errors.append(
+            f"data/predictions.json 已过期：last_updated={lu}（{age:.1f} 天前），"
+            f"超过上限 {MAX_AGE_DAYS} 天。请重新运行 scripts/update_predictions.py "
+            f"刷新 predictions.json 后再发布。"
+        )
+    else:
+        print(f"ℹ️  预测数据新鲜度 OK：last_updated={lu}（{age:.1f} 天前，上限 {MAX_AGE_DAYS} 天）")
 
 
 def main():
@@ -98,6 +159,9 @@ def main():
         # 规则 3：核心页面必须引用单一数据源
         if fn in SSOT_PAGES and not is_ssot:
             errors.append(f"{fn}: 单一数据源页面必须引用 predictions.json")
+
+    # 规则 4：预测数据源不得过期（独立于页面循环，只校验一次）
+    check_pred_freshness(errors)
 
     if errors:
         print("❌ 一致性校验未通过：")
