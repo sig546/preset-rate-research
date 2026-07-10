@@ -29,15 +29,17 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <style>
         :root {
-            --primary: #2563eb; --primary-light: #dbeafe;
-            --success: #10b981; --success-light: #d1fae5;
-            --warning: #f59e0b; --warning-light: #fef3c7;
-            --danger: #ef4444;  --danger-light: #fee2e2;
-            --bg: #f8fafc; --card: #ffffff;
+            --primary: #2563eb; --primary-light: #dbeafe; --primary-dark: #1e40af;
+            --success: #10b981; --success-light: #d1fae5; --success-dark: #065f46;
+            --warning: #f59e0b; --warning-light: #fef3c7; --warning-dark: #92400e;
+            --danger: #ef4444;  --danger-light: #fee2e2; --danger-dark: #991b1b;
+            --bg: #f1f5f9; --card: #ffffff;
             --text: #1e293b; --text-secondary: #64748b; --border: #e2e8f0;
+            --font-sans: "PingFang SC", "Microsoft YaHei", "Hiragino Sans GB", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            --font-mono: "SF Mono", "JetBrains Mono", "Fira Code", "Cascadia Code", Consolas, "Courier New", monospace;
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; }
+        body { font-family: var(--font-sans); background: var(--bg); color: var(--text); line-height: 1.65; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
         .container { max-width: 1280px; margin: 0 auto; padding: 1.5rem; }
         .page-header { background: linear-gradient(135deg, var(--primary), #3b82f6); color: white; padding: 2rem 2.5rem; border-radius: 16px; margin-bottom: 1.5rem; box-shadow: 0 4px 24px rgba(37,99,235,0.25); position: relative; }
         .page-header h1 { font-size: 2rem; font-weight: 700; }
@@ -46,7 +48,9 @@
         .btn-update { position: absolute; top: 1.5rem; right: 2rem; display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.45rem 0.9rem; background: rgba(255,255,255,0.2); color: white; text-decoration: none; border-radius: 8px; font-size: 0.82rem; font-weight: 500; border: 1px solid rgba(255,255,255,0.35); transition: all 0.2s; }
         .btn-update:hover { background: rgba(255,255,255,0.3); border-color: rgba(255,255,255,0.5); }
         .metrics-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
-        .metric-card { background: var(--card); border-radius: 12px; padding: 1.25rem 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.06); border: 1px solid var(--border); text-align: center; position: relative; }
+        .metric-card { background: var(--card); border-radius: 12px; padding: 1.25rem 1.5rem; box-shadow: 0 2px 8px rgba(15,23,42,0.06); border: 1px solid var(--border); border-top: 3px solid var(--primary); text-align: center; position: relative; transition: transform 0.18s ease, box-shadow 0.18s ease; }
+        .metric-card:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(15,23,42,0.10); }
+        .metric-card.blue { border-top-color: var(--primary); } .metric-card.green { border-top-color: var(--success); } .metric-card.orange { border-top-color: var(--warning); } .metric-card.red { border-top-color: var(--danger); }
         .metric-card .label { font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.4rem; }
         .metric-card .value { font-size: 2.25rem; font-weight: 700; }
         .metric-card .value.blue { color: var(--primary); } .metric-card .value.green { color: var(--success); } .metric-card .value.orange { color: var(--warning); } .metric-card .value.red { color: var(--danger); }
@@ -54,13 +58,13 @@
         .metric-card .tag { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 0.72rem; font-weight: 600; margin-top: 0.4rem; }
         .tag-blue { background: var(--primary-light); color: #1e40af; } .tag-green { background: var(--success-light); color: #065f46; } .tag-red { background: var(--danger-light); color: #991b1b; } .tag-yellow { background: var(--warning-light); color: #92400e; }
         .section { background: var(--card); border-radius: 12px; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.06); border: 1px solid var(--border); margin-bottom: 1.25rem; }
-        .section h2 { font-size: 1.15rem; color: var(--text); margin-bottom: 1rem; padding-bottom: 0.6rem; border-bottom: 2px solid var(--border); display: flex; align-items: center; gap: 0.5rem; }
+        .section h2 { font-size: 1.15rem; color: var(--text); margin-bottom: 1rem; padding: 0 0 0.6rem 0.75rem; border-bottom: 1px solid var(--border); border-left: 4px solid var(--primary); display: flex; align-items: center; gap: 0.5rem; }
         .tabs { display: flex; gap: 0.25rem; margin-bottom: 1rem; border-bottom: 2px solid var(--border); }
         .tab { padding: 0.5rem 1rem; background: none; border: none; font-size: 0.9rem; font-weight: 500; color: var(--text-secondary); cursor: pointer; border-radius: 6px 6px 0 0; transition: all 0.15s; }
         .tab:hover { background: var(--bg); } .tab.active { background: var(--primary); color: white; }
         .tab-content { display: none; } .tab-content.active { display: block; }
         .chart-wrap { position: relative; height: 420px; }
-        .tbl { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+        .tbl { width: 100%; border-collapse: collapse; font-size: 0.88rem; font-variant-numeric: tabular-nums; }
         .tbl th, .tbl td { padding: 0.65rem 0.8rem; text-align: center; border-bottom: 1px solid var(--border); }
         .tbl th { background: #f1f5f9; font-weight: 600; color: var(--text-secondary); font-size: 0.78rem; white-space: nowrap; }
         .tbl tr:hover { background: #f8fafc; }
@@ -73,6 +77,13 @@
         .info.green { background: var(--success-light); border-left: 4px solid var(--success); }
         .info.red { background: var(--danger-light); border-left: 4px solid var(--danger); }
         .info strong { display: block; margin-bottom: 0.25rem; }
+        .formula-box { background: linear-gradient(180deg, #f8fafc, #eef2ff); border: 1px solid var(--primary-light); border-left: 4px solid var(--primary); }
+        .formula-title { font-size: 0.98rem; color: var(--primary-dark); margin-bottom: 0.6rem; }
+        .formula-steps { font-family: var(--font-mono); font-size: 0.82rem; color: var(--text); line-height: 2; }
+        .formula-line { display: flex; gap: 0.6rem; align-items: baseline; flex-wrap: wrap; }
+        .formula-line .fl-tag { flex: 0 0 auto; min-width: 4.5rem; text-align: right; font-family: var(--font-sans); font-weight: 600; color: var(--primary-dark); background: var(--primary-light); padding: 1px 8px; border-radius: 6px; font-size: 0.78rem; }
+        .formula-note { margin-top: 0.7rem; font-size: 0.76rem; line-height: 1.7; color: var(--text-secondary); border-top: 1px dashed var(--border); padding-top: 0.55rem; }
+        .formula-note::first-letter { font-weight: 700; }
         .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
         @media (max-width:768px){ .grid-2 { grid-template-columns: 1fr; } }
         .cols-2 { display: grid; grid-template-columns: 2fr 1fr; gap: 1.25rem; }
@@ -102,7 +113,7 @@
 <!-- ====== HEADER ====== -->
 <div class="page-header">
     <a href="https://github.com/sig546/preset-rate-research/actions/workflows/update-actuals.yml"
-       class="btn-update" target="_blank" title="手动触发数据更新（需登录 GitHub）">
+       class="btn-update" target="_blank" title="手动触发数据更新（需登录 GitHub）" style="display:none;">
         🔄 更新数据
     </a>
     <h1>📊 预定利率研究值</h1>
@@ -112,25 +123,25 @@
 
 <!-- ====== METRIC CARDS ====== -->
 <div class="metrics-row">
-    <div class="metric-card">
+    <div class="metric-card blue">
         <div class="label">最新公布研究值</div>
         <div class="value blue" id="cardLatestValue">--</div>
         <div class="desc" id="cardLatestDesc">--</div>
         <span class="tag tag-blue">实际值</span>
     </div>
-    <div class="metric-card">
+    <div class="metric-card green">
         <div class="label">预定利率最高值</div>
         <div class="value green" id="cardMaxRate">--</div>
         <div class="desc" id="cardMaxRateDesc">普通型产品</div>
         <span class="tag tag-green">当前上限</span>
     </div>
-    <div class="metric-card">
+    <div class="metric-card orange">
         <div class="label">最高值 - 研究值</div>
         <div class="value orange" id="cardGap">--</div>
         <div class="desc" id="cardGapDesc">--</div>
         <span class="tag tag-yellow" id="cardGapTag">--</span>
     </div>
-    <div class="metric-card">
+    <div class="metric-card orange">
         <div class="label">下一期预测值</div>
         <div class="value orange" id="cardNextPred">--</div>
         <div class="desc" id="cardNextPredDesc">--</div>
@@ -202,17 +213,18 @@
 <div class="grid-2">
     <div class="section">
         <h2>🔢 计算公式 & 数据源</h2>
-        <div class="info blue">
-            <strong>预定利率研究值 = 分段系数调节( MIN(参考利率, 基础回报水平) )</strong>
-            <span style="font-family:monospace;font-size:0.78rem;">
-                <br>参考利率 = 6MMA[ (5Y LPR + 5Y定存利率) / 2 ]
-                <br>基础回报 = MIN( 国债MA250+利差250, 国债MA750+利差750 )
-            </span>
+        <div class="info formula-box">
+            <strong class="formula-title">预定利率研究值 = 分段系数调节( MIN(参考利率, 基础回报水平) )</strong>
+            <div class="formula-steps">
+                <div class="formula-line"><span class="fl-tag">参考利率</span> = 6个月移动平均 [ (5Y LPR + 5Y 定存利率) / 2 ]</div>
+                <div class="formula-line"><span class="fl-tag">基础回报</span> = MIN【（10年期国债到期收益率 + 税收溢价）250日移动平均 ,（10年期国债到期收益率 + 税收溢价）750日移动平均】</div>
+            </div>
+            <p class="formula-note">* 税收溢价：国债与政策性金融债（指国家开发银行、中国农业发展银行和中国进出口银行等政策性银行发行的债券）收益率差异主要由于国债利息收入免税，二者息差作为税收溢价的代表。</p>
         </div>
         <div class="info blue"><strong>📈 5年期LPR</strong> 来源：中国货币网 · 当前 3.50%（2025-05-20起）</div>
         <div class="info blue"><strong>🏦 六大行定存</strong> 来源：工农中建交邮官网 · 当前 1.30%（2025-05-20起）</div>
         <div class="info blue"><strong>📊 10年期国债</strong> 来源：中国货币网日频（akshare）</div>
-        <div class="info green"><strong>✅ 信用债利差</strong> 改用 akshare 实时获取10Y国开债/进出口债日频收益率，不再使用静态利差</div>
+        <div class="info green"><strong>✅ 税收溢价</strong> 由10Y国开债/进出口债与国债收益率之差动态计算（250/750日移动平均）</div>
         <div style="margin-top:0.75rem;"><a href="formula_report.html" target="_blank" class="btn-link">查看完整计算公式报告 →</a></div>
     </div>
 

@@ -165,7 +165,7 @@ def get_deposit_for_month(year: int, month: int, deposit_history: list = None) -
     return rate
 SEGMENT_COEFF = [
     (0.00, 1.00, 1.00), (1.00, 2.00, 1.00), (2.00, 2.50, 0.95),
-    (2.50, 3.00, 1.00), (3.00, 3.50, 0.50),
+    (2.50, 3.00, 0.95), (3.00, 3.50, 0.50),
     (3.50, 4.00, 0.50), (4.00, 10.00, 0.30),
 ]
 MAX_RATE = 2.00  # 当前普通型预定利率最高值
@@ -376,15 +376,60 @@ def compute_spread_ma(bond_data: list, comp_date: str, window: int) -> float:
         return 0.0912  # 默认利差
     return float(np.mean(spreads))
 
+# ── 未来日期平推扩展 ──
+def extend_bond_to_date(bond_data: list, comp_date: str) -> list:
+    """将债券数据平推扩展到 comp_date：用最后已知值填充 (最后日期, comp_date] 的未来工作日。
+
+    修复：原 compute_ma / compute_spread_ma 直接按 comp_date 截断，当 comp_date 晚于
+    债券数据末日时，所有未来季度的 MA 窗口都会回退到同一段历史尾部，导致预测值雷同。
+    平推后，未来季度会因常数段在移动窗口中占比渐增而产生合理的缓慢渐变。
+    """
+    if not bond_data:
+        return bond_data
+    cutoff = comp_date[:10] if len(comp_date) > 10 else comp_date
+    last_date = max(r["date"] for r in bond_data)
+    if last_date >= cutoff:
+        return bond_data  # comp_date 落在数据范围内，无需扩展
+    # 取最后有 gov_10y 的已知行作为平推基准
+    base = None
+    for r in reversed(bond_data):
+        if r.get("gov_10y") is not None:
+            base = r
+            break
+    if base is None:
+        return bond_data
+    lg, lc, li = base.get("gov_10y"), base.get("cdb_10y"), base.get("ieb_10y")
+    ext = list(bond_data)
+    d = date.fromisoformat(last_date) + timedelta(days=1)
+    end = date.fromisoformat(cutoff)
+    while d <= end:
+        if d.weekday() < 5:  # 仅工作日
+            ext.append({"date": d.isoformat(), "gov_10y": lg, "cdb_10y": lc, "ieb_10y": li})
+        d += timedelta(days=1)
+    return ext
+
 # ── 公式 ──
 def apply_segment(pre_val: float) -> float:
+    """分段系数调节（分段累加实现，与协会口径一致）。
+
+    实现方式：把 pre_val 按区间拆开，仅对"落入各区间的那一段"乘对应系数，
+    再将各段乘积相加（而非把整个值直接乘系数）。例如 pre_val=2.3534%：
+      1.0×1.00 + 1.0×1.00 + 0.3534×0.95 = 2.3357%
+    等价于 public_data_calculation.calculate_coeff（回溯验证模型B，平均|差|≤1.42BP）。
+    """
+    total = 0.0
     for low, high, coeff in SEGMENT_COEFF:
-        if low < pre_val <= high:
-            return pre_val * coeff
-    return pre_val
+        if pre_val > high:
+            total += (high - low) * coeff
+        elif pre_val > low:
+            total += (pre_val - low) * coeff
+        else:
+            break
+    return round(total, 4)
 
 def compute_prediction(comp_date: str, bond_data: list, lpr_history: list = None, deposit_history: list = None) -> dict:
     """计算指定截止日期的预定利率研究值"""
+    bond_data = extend_bond_to_date(bond_data, comp_date)  # 未来日期平推，避免窗口冻结
     comp_dt = date.fromisoformat(comp_date[:10] if len(comp_date) > 10 else comp_date)
     
     # 参考利率：6个月 LPR+定存 均值的 MA

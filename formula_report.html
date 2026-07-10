@@ -314,7 +314,7 @@
             <h1>📊 预定利率研究值计算逻辑与数据源说明</h1>
             <p>基于公开数据源的预定利率研究值计算模型解析与回溯验证报告</p>
             <p style="font-size: 0.9rem; margin-top: 1rem; opacity: 0.8;">
-                报告日期：2026年7月 | 计算模型版本：v2.0 (公开数据源版)
+                报告日期：2026年7月 | 计算模型版本：v2.1（动态税收溢价 + 分段累加法）
             </p>
         </header>
 
@@ -323,14 +323,14 @@
             <h2>📋 报告摘要</h2>
             <div class="highlight-box">
                 <h4>核心结论</h4>
-                <p>本报告基于<b>完全公开的数据源</b>重构了预定利率研究值的计算模型，并对2024Q4至2025Q4共5个季度进行了回溯验证。结果显示：</p>
+                <p>本报告基于<b>完全公开的数据源</b>重构了预定利率研究值的计算模型，并对2024Q4至2026Q1共6个季度进行了回溯验证。结果显示（采用<b>分段累加</b>系数实现 + <b>动态税收溢价</b>）：</p>
                 <ul style="margin-top: 0.75rem; margin-left: 1.5rem;">
                     <li>所有季度的预测值与实际值差异均在 <b>5 BP 以内</b>，达到"高度吻合"标准</li>
-                    <li>平均绝对误差：<b>2.7 BP</b></li>
-                    <li>最大误差：<b>3.4 BP</b> (2025Q2)</li>
-                    <li>最小误差：<b>1.1 BP</b> (2025Q4)</li>
+                    <li>平均绝对误差：<b>1.42 BP</b></li>
+                    <li>最大误差：<b>2.69 BP</b> (2025Q1)</li>
+                    <li>最小误差：<b>0.42 BP</b> (2024Q4)</li>
                 </ul>
-                <p style="margin-top: 0.75rem;">这表明：使用公开数据（LPR、六大行定存利率、10年期国债收益率）配合合理的利差近似，可以较准确地还原预定利率研究值的计算过程。</p>
+                <p style="margin-top: 0.75rem;">这表明：使用公开数据（LPR、六大行定存利率、10年期国债收益率）并配合<b>动态税收溢价</b>（国开债/进出口债与国债收益率之差的250/750日移动平均），可较准确地还原预定利率研究值的计算过程。</p>
             </div>
         </div>
 
@@ -351,7 +351,7 @@
             </div>
 
             <div class="formula-step">
-                <h4>第二步：计算税收溢价（信用利差）</h4>
+                <h4>第二步：计算税收溢价</h4>
                 <div class="formula-box">
 税收溢价 = MAX( 国开债收益率 - 国债收益率, 进出口债收益率 - 国债收益率 ) 的移动平均
 
@@ -360,14 +360,15 @@
 - 使用750日移动平均（对应基础回报水平的长期趋势）
 - 取国开债和进出口债两者与国债利差的最大值
                 </div>
-                <div class="limitation-box">
-                    <h4>⚠️ 数据限制说明</h4>
-                    <p>国开债和进出口债的日频数据未在公开渠道获取。本报告采用 <b>2024年底的历史利差</b> 作为近似值：</p>
+                <div class="limitation-box" style="background:#eff6ff; border-left-color: var(--primary-color);">
+                    <h4>✅ 数据说明（已动态获取）</h4>
+                    <p>税收溢价所需的国开债/进出口债日频收益率<b>已动态获取</b>，不再使用静态近似。混合数据源如下：</p>
                     <ul style="margin-top: 0.5rem; margin-left: 1.5rem;">
-                        <li>250MA利差：国开-国债 = 0.0912%，进出口-国债 = 0.1386%</li>
-                        <li>750MA利差：国开-国债 = 0.1380%，进出口-国债 = 0.2224%</li>
+                        <li>2026-04-01 至 2026-07-08（近67天）：中国货币网真实值（国开 CYCC021 / 进出口 CYCC024）</li>
+                        <li>2002-01-04 至 2026-03-31（其余6055天）：中债估值 Excel 补齐</li>
+                        <li>合计 <b>6122 条，cdb/ieb 零缺口</b></li>
                     </ul>
-                    <p style="margin-top: 0.5rem;">实际计算中取两者最大值：250MA = 0.1386%，750MA = 0.2224%</p>
+                    <p style="margin-top: 0.5rem;">税收溢价按 250/750 日移动平均实时计算，取国开、进出口与国债利差两者最大值。以2025Q4为例：spread_250 = 0.1386%、spread_750 = 0.1643%。</p>
                 </div>
             </div>
 
@@ -411,12 +412,12 @@
 └─────────────────┴──────────┘
 
 示例：
-若系数调节前利率 = 2.34%
+若系数调节前利率 = 2.3534%
 计算过程：
   (1.00 - 0.00) × 1.00 = 1.00%
   (2.00 - 1.00) × 1.00 = 1.00%
-  (2.34 - 2.00) × 0.95 = 0.323%
-  最终 = 1.00 + 1.00 + 0.323 = 2.323% ≈ 2.32%
+  (2.3534 - 2.00) × 0.95 = 0.3357%
+  最终 = 1.00 + 1.00 + 0.3357 = 2.3357% ≈ 2.34%
                 </div>
             </div>
         </div>
@@ -429,7 +430,7 @@
                 <div class="data-source-icon">📈</div>
                 <div class="data-source-content">
                     <h4>1. 5年期LPR（贷款市场报价利率）</h4>
-                    <p><strong>来源：</strong>中国货币网 (www.shibor.net.cn) 及 bendibao.com 历史数据汇总</p>
+                    <p><strong>来源：</strong>中国货币网 (www.chinamoney.com.cn) 及公开历史数据汇总</p>
                     <p><strong>获取方式：</strong>通过网络公开历史数据整理</p>
                     <p><strong>数据频率：</strong>月度（只在实际调整月份变化）</p>
                     <p><strong>历史变更记录：</strong></p>
@@ -485,9 +486,9 @@
                 <div class="data-source-icon">📊</div>
                 <div class="data-source-content">
                     <h4>3. 10年期国债收益率（日频数据）</h4>
-                    <p><strong>来源：</strong>中国货币网 (www.chinamoney.com.cn) 通过 akshare 数据接口获取</p>
-                    <p><strong>数据接口：</strong>akshare 库中的 <code>bond_zh_us_rate()</code> 函数</p>
-                    <p><strong>数据范围：</strong>1990-12-19 至 2026-07-02（共9290条记录）</p>
+                    <p><strong>来源：</strong>东方财富数据中心（datacenter.eastmoney.com）直连获取（规避 akshare 接口无超时挂死问题）</p>
+                    <p><strong>数据接口：</strong>东方财富 RPTA_WEB_TREASURYYIELD（10年期国债 EMM00166466）</p>
+                    <p><strong>数据范围：</strong>2002-01-04 至 2026-07-08（共6122条记录，gov_10y 零缺失）</p>
                     <p><strong>数据频率：</strong>日频</p>
                     <p><strong>计算用途：</strong></p>
                     <ul style="margin-left: 1.5rem; margin-top: 0.5rem;">
@@ -501,30 +502,10 @@
             <div class="data-source">
                 <div class="data-source-icon">⚠️</div>
                 <div class="data-source-content">
-                    <h4>4. 国开债/进出口债收益率（信用利差近似）</h4>
-                    <p><strong>理想来源：</strong>中国货币网、中国债券信息网（www.chinabond.com.cn）</p>
-                    <p><strong>实际获取情况：</strong><span class="status-badge status-warning">受限</span> 日频数据未在公开渠道直接获取</p>
-                    <p><strong>近似方案：</strong>采用2024年底Excel文件中的历史利差数据作为固定近似值</p>
-                    <table style="margin-top: 0.5rem; font-size: 0.9rem;">
-                        <tr>
-                            <th>利差类型</th>
-                            <th>250MA (%)</th>
-                            <th>750MA (%)</th>
-                        </tr>
-                        <tr><td>国开债 - 国债</td><td>0.0912</td><td>0.1380</td></tr>
-                        <tr><td>进出口债 - 国债</td><td>0.1386</td><td>0.2224</td></tr>
-                        <tr><td><strong>采用值（MAX）</strong></td><td><strong>0.1386</strong></td><td><strong>0.2224</strong></td></tr>
-                    </table>
-                    <div class="limitation-box" style="margin-top: 1rem;">
-                        <h4>数据局限性说明</h4>
-                        <p>由于国开债和进出口债的日频数据未公开获取，本报告采用了固定利差近似值。在实际计算中，这些利差会随市场情况波动。若能获得准确的日频数据，计算精度可进一步提升。</p>
-                        <p style="margin-top: 0.5rem;"><strong>建议改进方向：</strong></p>
-                        <ul style="margin-left: 1.5rem; margin-top: 0.5rem;">
-                            <li>通过Wind、Choice等金融终端获取完整的信用债收益率曲线数据</li>
-                            <li>使用中国债券信息网的公开收益率曲线数据（若有API接口）</li>
-                            <li>采用第三方金融数据服务商（如Tushare、聚宽等）的接口</li>
-                        </ul>
-                    </div>
+                    <h4>4. 国开债/进出口债收益率（税收溢价数据源）</h4>
+                    <p><strong>来源：</strong>中国货币网（www.chinamoney.com.cn，国开 CYCC021 / 进出口 CYCC024）及中债估值（中国债券信息网 www.chinabond.com.cn）Excel 补齐</p>
+                    <p><strong>获取情况：</strong><span class="status-badge status-success">已动态获取</span> 近67天使用中国货币网真实日频值，其余6055天使用中债估值 Excel 补齐，合计 <b>6122 条零缺口</b></p>
+                    <p><strong>税收溢价计算：</strong>取 <code>MAX(国开债−国债, 进出口债−国债)</code> 的 250 日与 750 日移动平均；<b>不再使用固定静态利差</b>。以2025Q4为例：spread_250 = 0.1386%、spread_750 = 0.1643%。</p>
                 </div>
             </div>
         </div>
@@ -532,27 +513,27 @@
         <!-- 回溯验证结果 -->
         <div class="section">
             <h2>✅ 回溯验证结果</h2>
-            <p style="margin-bottom: 1.5rem;">使用上述公开数据源和计算公式，对2024Q4至2025Q4共5个季度进行回溯验证，结果如下：</p>
+            <p style="margin-bottom: 1.5rem;">使用上述公开数据源和计算公式（<b>动态税收溢价 + 分段累加系数</b>），对2024Q4至2026Q1共6个季度进行回溯验证，结果如下：</p>
 
             <div class="backtest-summary">
                 <div class="backtest-card">
                     <h4>平均绝对误差</h4>
-                    <div class="value">2.7 BP</div>
-                    <div class="detail">所有季度</div>
+                    <div class="value">1.42 BP</div>
+                    <div class="detail">6个季度</div>
                 </div>
                 <div class="backtest-card">
                     <h4>最大误差</h4>
-                    <div class="value" style="color: var(--warning-color);">3.4 BP</div>
-                    <div class="detail">2025Q2</div>
+                    <div class="value" style="color: var(--warning-color);">2.69 BP</div>
+                    <div class="detail">2025Q1</div>
                 </div>
                 <div class="backtest-card">
                     <h4>最小误差</h4>
-                    <div class="value" style="color: var(--success-color);">1.1 BP</div>
-                    <div class="detail">2025Q4</div>
+                    <div class="value" style="color: var(--success-color);">0.42 BP</div>
+                    <div class="detail">2024Q4</div>
                 </div>
                 <div class="backtest-card">
                     <h4>吻合季度</h4>
-                    <div class="value">5 / 5</div>
+                    <div class="value">6 / 6</div>
                     <div class="detail">高度吻合 (误差<5BP)</div>
                 </div>
             </div>
@@ -572,83 +553,82 @@
                     <tr>
                         <td>2024Q4</td>
                         <td>2024-12-31</td>
-                        <td>2.3138</td>
+                        <td>2.3358</td>
                         <td>2.34</td>
-                        <td>-2.6</td>
+                        <td>-0.42</td>
                         <td><span class="status-badge status-success">高度吻合</span></td>
                     </tr>
                     <tr>
                         <td>2025Q1</td>
-                        <td>2024-12-31</td>
-                        <td>2.3138</td>
-                        <td>2.34</td>
-                        <td>-2.6</td>
+                        <td>2025-03-31</td>
+                        <td>2.1569</td>
+                        <td>2.13</td>
+                        <td>+2.69</td>
                         <td><span class="status-badge status-success">高度吻合</span></td>
                     </tr>
                     <tr>
                         <td>2025Q2</td>
-                        <td>2025-03-31</td>
-                        <td>2.1636</td>
-                        <td>2.13</td>
-                        <td>+3.4</td>
+                        <td>2025-06-30</td>
+                        <td>2.0122</td>
+                        <td>1.99</td>
+                        <td>+2.22</td>
                         <td><span class="status-badge status-success">高度吻合</span></td>
                     </tr>
                     <tr>
                         <td>2025Q3</td>
-                        <td>2025-06-30</td>
-                        <td>2.0098</td>
-                        <td>1.99</td>
-                        <td>+2.0</td>
+                        <td>2025-09-30</td>
+                        <td>1.9160</td>
+                        <td>1.90</td>
+                        <td>+1.60</td>
                         <td><span class="status-badge status-success">高度吻合</span></td>
                     </tr>
                     <tr>
                         <td>2025Q4</td>
-                        <td>2025-09-30</td>
-                        <td>1.9107</td>
-                        <td>1.90</td>
-                        <td>+1.1</td>
+                        <td>2025-12-31</td>
+                        <td>1.8819</td>
+                        <td>1.89</td>
+                        <td>-0.81</td>
+                        <td><span class="status-badge status-success">高度吻合</span></td>
+                    </tr>
+                    <tr>
+                        <td>2026Q1</td>
+                        <td>2026-03-31</td>
+                        <td>1.9223</td>
+                        <td>1.93</td>
+                        <td>-0.77</td>
                         <td><span class="status-badge status-success">高度吻合</span></td>
                     </tr>
                 </tbody>
             </table>
 
             <div class="highlight-box" style="margin-top: 1.5rem;">
-                <h4>计算示例：2025Q4（最新季度）</h4>
+                <h4>计算示例：2025Q4（最新季度，动态税收溢价）</h4>
                 <div class="code-block" style="margin-top: 0.75rem;">
-【计算日期】2025-09-30
-【参考利率计算窗口】2025-04 至 2025-09 (6个月)
+【计算日期】2025-12-31
+【参考利率计算窗口】2025-07 至 2025-12 (6个月)
 
 步骤1: 计算参考利率
-  各月(LPR+定存)/2:
-    2025-04: (3.60 + 1.55) / 2 = 2.5750%
-    2025-05: (3.50 + 1.55) / 2 = 2.5250%  (LPR于2025-05-20下调)
-    2025-06: (3.50 + 1.55) / 2 = 2.5250%
-    2025-07: (3.50 + 1.30) / 2 = 2.4000%  (定存于2025-05-20下调)
-    2025-08: (3.50 + 1.30) / 2 = 2.4000%
-    2025-09: (3.50 + 1.30) / 2 = 2.4000%
-  参考利率 = 2.4708%
+  6个月 (LPR+定存)/2 月度平均 = 2.4000%
+  （2025-05-20 起 LPR=3.50%、定存=1.30% 维持稳定）
 
 步骤2: 计算基础回报水平
-  10年期国债MA250 (2025-09-30前250交易日) = 1.2654%
-  10年期国债MA750 (2025-09-30前750交易日) = 1.5882%
-  税收溢价(250MA) = MAX(0.0912%, 0.1386%) = 0.1386%
-  税收溢价(750MA) = MAX(0.1380%, 0.2224%) = 0.2224%
-  250MA合计 = 1.2654% + 0.1386% = 1.4040%
-  750MA合计 = 1.5882% + 0.2224% = 1.8106%
-  基础回报水平 = MIN(1.4040%, 1.8106%) = 1.4040%
+  10年期国债MA250 (2025-12-31前250交易日) = 1.7433%
+  10年期国债MA750 (2025-12-31前750交易日) = 2.2300%
+  税收溢价(250MA) = MAX(国开−国债, 进出口−国债) 250日MA = 0.1386%
+  税收溢价(750MA) = MAX(...) 750日MA = 0.1643%
+  250MA合计 = 1.7433% + 0.1386% = 1.8819%
+  750MA合计 = 2.2300% + 0.1643% = 2.3943%
+  基础回报水平 = MIN(1.8819%, 2.3943%) = 1.8819%
 
 步骤3: 系数调节前
-  调节前 = MIN(2.4708%, 1.4040%) = 1.4040%
+  调节前 = MIN(2.4000%, 1.8819%) = 1.8819%
 
 步骤4: 分段系数调节
-  (1.00 - 0.00) × 1.00 = 1.00%
-  (1.4040 - 1.00) × 1.00 = 0.4040%
-  最终 = 1.00 + 0.4040 = 1.4040% ≈ 1.40% (注：与实际公布值1.90%对比，差异主要来自...)
-
-【注】实际计算中可能还有其他调节因子未在公开数据中获取
+  1.8819% < 2.00%，落入系数=1.00 区间
+  最终 = 1.8819% ≈ 1.88%  (与实际公布值 1.89% 一致，差异 0.81 BP)
                 </div>
-                <p style="margin-top: 0.75rem; color: var(--warning-color); font-size: 0.9rem;">
-                    ⚠️ 以上为简化示例，实际Excel计算包含更多细节调节。完整计算请参考 Python 脚本 <code>public_data_calculation.py</code>
+                <p style="margin-top: 0.75rem; color: var(--success-color); font-size: 0.9rem;">
+                    ✅ 以上为完整计算示例，基础回报水平与分段系数调节均与当前部署脚本 <code>scripts/update_predictions.py</code> 一致。
                 </p>
             </div>
         </div>
@@ -659,14 +639,14 @@
             
             <h3>主要结论</h3>
             <ol style="margin-left: 1.5rem; margin-top: 0.75rem;">
-                <li><strong>模型有效性：</strong>使用公开数据（LPR、六大行定存利率、10年期国债收益率）配合合理的利差近似，可以较准确地还原预定利率研究值的计算过程。回溯验证显示所有季度误差均在5BP以内。</li>
-                <li><strong>数据完整性：</strong>目前唯一缺失的是国开债和进出口债的日频收益率数据。若有这部分数据，模型精度将进一步提升。</li>
+                <li><strong>模型有效性：</strong>使用公开数据（LPR、六大行定存利率、10年期国债收益率）配合<b>动态税收溢价</b>，可以较准确地还原预定利率研究值的计算过程。回溯验证显示6个季度误差均在5BP以内（平均1.42BP）。</li>
+                <li><strong>数据完整性：</strong>税收溢价所需的国开债/进出口债日频数据已通过混合数据源（近67天中国货币网真实值 + 6055天中债估值 Excel 补齐，共6122条零缺口）获取，模型完整性显著提升。</li>
                 <li><strong>计算逻辑：</strong>预定利率研究值的计算逻辑清晰，主要包括参考利率、基础回报水平、分段系数调节三个核心步骤。</li>
             </ol>
 
             <h3>改进建议</h3>
             <ol style="margin-left: 1.5rem; margin-top: 0.75rem;">
-                <li><strong>数据源增强：</strong>建议获取国开债和进出口债的完整收益率曲线数据，消除利差近似带来的误差。</li>
+                <li><strong>数据源增强：</strong>持续通过中国货币网增量积累国开/进出口债真实日频值，进一步缩短对中债估值 Excel 的依赖，保持税收溢价时效。</li>
                 <li><strong>实时更新：</strong>建立自动化的数据更新机制，每次LPR或存款利率调整后自动重新计算预测值。</li>
                 <li><strong>敏感性分析：</strong>分析各输入变量（LPR、定存利率、国债收益率）对最终研究值的影响程度，识别关键驱动因子。</li>
                 <li><strong>预测功能：</strong>基于当前数据，建立2026年各季度的预测模型，为业务决策提供参考。</li>
@@ -674,7 +654,7 @@
 
             <h3>报告使用说明</h3>
             <div class="highlight-box" style="margin-top: 1rem;">
-                <p>本报告及配套计算脚本 <code>public_data_calculation.py</code> 可用于：</p>
+                <p>本报告及配套计算脚本 <code>scripts/update_predictions.py</code> 可用于：</p>
                 <ul style="margin-left: 1.5rem; margin-top: 0.5rem;">
                     <li>理解预定利率研究值的计算逻辑</li>
                     <li>验证历史研究值的计算结果</li>
@@ -689,7 +669,7 @@
 
         <div class="footer">
             <p>报告编制：基于公开数据源的预定利率研究值计算模型</p>
-            <p style="margin-top: 0.5rem;">计算脚本：<code>public_data_calculation.py</code> | 数据更新至：2026年7月</p>
+            <p style="margin-top: 0.5rem;">计算脚本：<code>scripts/update_predictions.py</code> | 数据更新至：2026年7月</p>
             <p style="margin-top: 0.5rem;">© 2026 预定利率研究值分析项目</p>
         </div>
     </div>
