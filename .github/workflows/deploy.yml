@@ -31,6 +31,9 @@ jobs:
       - name: 运行一致性校验
         run: python scripts/check_data_consistency.py
 
+      - name: 一致性检核清单（发版前全量核查）
+        run: python scripts/run_checklist.py
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:

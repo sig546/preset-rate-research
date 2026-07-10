@@ -1,0 +1,188 @@
+{
+  "date": "2026-07-10",
+  "overall": "⚠️ 通过（6 项提示，需关注）",
+  "fail": 0,
+  "warn": 6,
+  "rows": [
+    {
+      "id": "C1",
+      "title": "预测值 SSOT",
+      "status": "✅",
+      "note": "两页均引用 predictions.json，无分叉硬编码；当前四值 [1.9313, 1.9094, 1.8606, 1.8135]"
+    },
+    {
+      "id": "C2",
+      "title": "实际值三处一致",
+      "status": "✅",
+      "note": "actuals.json 六季（2024Q4..2026Q1）index.html 经 actuals.json 加载；formula_report.html 均含对应值"
+    },
+    {
+      "id": "C3",
+      "title": "最高值口径",
+      "status": "✅",
+      "note": "actuals.json 最高值：≤2025Q2 为 2.50%、≥2025Q3 为 2.00%；页面无 2026 季度误标 2.50%"
+    },
+    {
+      "id": "C4",
+      "title": "数据源声明",
+      "status": "✅",
+      "note": "bond_yields.json=6122 条，2002-01-04~2026-07-08，与 formula_report.html 声明一致"
+    },
+    {
+      "id": "C5",
+      "title": "引用有效",
+      "status": "⚠️",
+      "note": "核心页面通过；遗留页面 ['formula_analysis_v2.html'] 仍含旧引用（技术债，参考 MIGRATION.md，建议改 SSOT 或下线）"
+    },
+    {
+      "id": "C6",
+      "title": "更新时间",
+      "status": "✅",
+      "note": "trigger_analysis_report.html 页脚 dataUpdated 绑定 predictions.json.last_updated；index.html 显示最新数据季度"
+    },
+    {
+      "id": "C7",
+      "title": "预测可复算",
+      "status": "🔍",
+      "note": "离线复算四步公式 == predictions.json（误差≤0.0001）已于 commit f94bddc 重生时验证；CI 默认不重跑网络抓取，建议数据更新后人工执行 scripts/update_predictions.py 复算核对"
+    },
+    {
+      "id": "C8",
+      "title": "分段累加",
+      "status": "✅",
+      "note": "脚本 apply_segment 为逐段累加，2.5~3.0 段系数 0.95，与公式页系数表一致（回溯模型B avg|差|=1.42BP）"
+    },
+    {
+      "id": "C9",
+      "title": "平推假设",
+      "status": "✅",
+      "note": "四季差值 [6.9, 9.1, 13.9, 18.7] BP 均<25，平推（未来 LPR=3.50%/定存=1.30%/债券=1.7385% 维持不变）自洽"
+    },
+    {
+      "id": "C10",
+      "title": "回溯汇总/明细",
+      "status": "✅",
+      "note": "backtest_history.json（avg=1.42, max=2.69, min=0.42）与公式页声明一致"
+    },
+    {
+      "id": "C11",
+      "title": "触发主表/明细",
+      "status": "✅",
+      "note": "主表与预测明细表均由 predictions.json 同一数组渲染，构造上一致"
+    },
+    {
+      "id": "P1",
+      "title": "核心术语唯一",
+      "status": "⚠️",
+      "note": "核心页面通过；遗留页面 ['prediction_report.html', 'prediction_report_corrected.html'] 仍用「信用债利差」等旧术语（技术债）"
+    },
+    {
+      "id": "P2",
+      "title": "分段系数表",
+      "status": "✅",
+      "note": "脚本 SEGMENT_COEFF 与 formula_report 系数表逐段一致（2.5~3.0=0.95 等）"
+    },
+    {
+      "id": "P3",
+      "title": "基础回报公式",
+      "status": "⚠️",
+      "note": "两页均含「税收溢价 + 250/750 移动平均」核心口径，建议统一措辞"
+    },
+    {
+      "id": "P4",
+      "title": "触发阈值",
+      "status": "⚠️",
+      "note": "核心页面通过；遗留页面 ['prediction_report.html'] 含异版阈值（20BP/连续3季度，技术债）"
+    },
+    {
+      "id": "P5",
+      "title": "预测趋势逻辑",
+      "status": "✅",
+      "note": "未见「预测利率将下行」类表述；图表下行与「MA 窗口效应」叙述自洽"
+    },
+    {
+      "id": "P6",
+      "title": "时间线",
+      "status": "✅",
+      "note": "actuals 止于 2026Q1，predictions 起于 2026Q2，无错位"
+    },
+    {
+      "id": "P7",
+      "title": "章节标题",
+      "status": "✅",
+      "note": "公式页章节标题均贴合内容（第二步=税收溢价，无标题/内容错配）"
+    },
+    {
+      "id": "P8",
+      "title": "图表=表格=源",
+      "status": "✅",
+      "note": "两张 Chart 由 predRes.predictions / actRes.actuals 同源渲染，图=表=源一致"
+    },
+    {
+      "id": "P9",
+      "title": "图表标注",
+      "status": "✅",
+      "note": "gapChart 含 25BP 触发线标注（TRIGGER_THRESHOLD=0.25）；trendChart 含最高值阶梯线"
+    },
+    {
+      "id": "F1",
+      "title": "百分比统一",
+      "status": "✅",
+      "note": "研究值主表 2 位 / 明细 4 位分区明确，未见混用 3 位小数"
+    },
+    {
+      "id": "F2",
+      "title": "BP 单位",
+      "status": "⚠️",
+      "note": "index.html 出现小写 bp/bps；formula_report.html 出现小写 bp/bps；trigger_analysis_report.html 使用「个基点」（与全站 BP 不统一）；trigger_analysis_report.html 出现小写 bp/bps（建议统一为 BP；当前不阻断）"
+    },
+    {
+      "id": "F3",
+      "title": "小数位数",
+      "status": "⚠️",
+      "note": "predictions.json 同类字段小数位不统一（如 ma250_gov 出现 [2, 3, 4] 位混用），建议生成时补零至 4 位以保证展示一致"
+    },
+    {
+      "id": "F4",
+      "title": "标点/连接号",
+      "status": "🔍",
+      "note": "中文全角标点、季度区间连接号（~ / ～）、日期 YYYY-MM-DD 风格需人工目视核对全站一致性"
+    },
+    {
+      "id": "F5",
+      "title": "季度编号",
+      "status": "✅",
+      "note": "2024Q4→2027Q1 连续无重复遗漏，实际/预测分界清晰"
+    },
+    {
+      "id": "F6",
+      "title": "章节/图编号",
+      "status": "✅",
+      "note": "公式页第一~第五步编号连续无跳号/重复"
+    },
+    {
+      "id": "F7",
+      "title": "字段命名",
+      "status": "✅",
+      "note": "页面读取字段名与 predictions.json/actuals.json 字段名一致，无拼写漂移"
+    },
+    {
+      "id": "A1",
+      "title": "一致性校验",
+      "status": "✅",
+      "note": "check_data_consistency.py 规则1-4 通过（EXIT=0）"
+    },
+    {
+      "id": "A2",
+      "title": "数据不过期",
+      "status": "✅",
+      "note": "last_updated=2026-07-10 13:51（0.0 天前，≤40）"
+    },
+    {
+      "id": "A3",
+      "title": "发版后实测",
+      "status": "✅",
+      "note": "线上两页无旧值、均引用 predictions.json，predictions.json 首值=1.9313"
+    }
+  ]
+}

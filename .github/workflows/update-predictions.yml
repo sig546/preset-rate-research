@@ -42,6 +42,9 @@ jobs:
       - name: 一致性校验（单一数据源守卫）
         run: python scripts/check_data_consistency.py
 
+      - name: 一致性检核清单（发版前全量核查）
+        run: python scripts/run_checklist.py
+
       - name: 提交并推送更新
         run: |
           if git diff --quiet && [ -z "$(git ls-files --others --exclude-standard)" ]; then
