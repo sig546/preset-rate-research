@@ -24,6 +24,13 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
+      - name: 一致性校验（单一数据源守卫）
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: 运行一致性校验
+        run: python scripts/check_data_consistency.py
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:

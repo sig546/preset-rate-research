@@ -292,10 +292,14 @@
             <h3>⚡ 紧急调整机制（第三条第四款）</h3>
             <p>当市场利率、公司经营等情况在短期内出现重大变化时，要及时启动相应决策机制，研究调整各类产品预定利率最高值。</p>
         </div>
-        
+
+        <div id="dataError" style="display:none; background:#fdecea; border:1px solid #f5c6cb; color:#a4282c; padding:12px 16px; border-radius:8px; margin:12px 0; font-weight:600;">
+            ⚠️ 数据加载失败（predictions.json / actuals.json 无法读取）。本页数值为单一数据源自动渲染，请检查网络后刷新；若持续失败请联系维护者。
+        </div>
+
         <!-- ====== 关键指标：预定利率最高值 - 研究值 ====== -->
         <h2>📐 核心指标：预定利率最高值 - 研究值（差值分析）</h2>
-        
+
         <div class="table-wrap">
             <table>
                 <thead>
@@ -309,88 +313,8 @@
                         <th>说明</th>
                     </tr>
                 </thead>
-                <tbody>
-                    <tr class="row-past">
-                        <td><strong>2025Q1</strong></td>
-                        <td>2.34</td>
-                        <td>2.50</td>
-                        <td class="gap-positive">16</td>
-                        <td><span class="badge badge-blue">实际</span></td>
-                        <td>❌ 否</td>
-                        <td>差值不足25BP</td>
-                    </tr>
-                    <tr class="row-past">
-                        <td><strong>2025Q2</strong></td>
-                        <td>2.13</td>
-                        <td>2.50</td>
-                        <td class="gap-positive">37 <span class="badge badge-red">≥25</span></td>
-                        <td><span class="badge badge-blue">实际</span></td>
-                        <td>⚠️ 第1季</td>
-                        <td>差值首次达到25BP</td>
-                    </tr>
-                    <tr class="row-past">
-                        <td><strong>2025Q3</strong></td>
-                        <td>1.99</td>
-                        <td>2.50/2.00</td>
-                        <td class="gap-positive">51 <span class="badge badge-red">≥25</span></td>
-                        <td><span class="badge badge-blue">实际</span></td>
-                        <td>🔴 <span class="trigger-yes trigger-down">触发下调</span></td>
-                        <td>连续2季度≥25BP → 7月25日公告，9月1日起最高值降至2.00%</td>
-                    </tr>
-                    <tr class="row-past">
-                        <td><strong>2025Q4</strong></td>
-                        <td>1.90</td>
-                        <td>2.00</td>
-                        <td>10</td>
-                        <td><span class="badge badge-blue">实际</span></td>
-                        <td>❌ 否</td>
-                        <td>新基准下差值不足</td>
-                    </tr>
-                    <tr class="row-now">
-                        <td><strong>2026Q1</strong></td>
-                        <td>1.93</td>
-                        <td>2.00</td>
-                        <td class="gap-positive">7</td>
-                        <td><span class="badge badge-blue">实际</span></td>
-                        <td>❌ 否</td>
-                        <td>差值较少，不触发</td>
-                    </tr>
-                    <tr class="row-future">
-                        <td><strong>2026Q2</strong></td>
-                        <td>1.9383</td>
-                        <td>2.00</td>
-                        <td class="gap-positive">6.2</td>
-                        <td><span class="badge badge-green">预测</span></td>
-                        <td>❌ 否</td>
-                        <td>差值仍不足</td>
-                    </tr>
-                    <tr class="row-future">
-                        <td><strong>2026Q3</strong></td>
-                        <td>1.9229</td>
-                        <td>2.00</td>
-                        <td class="gap-positive">7.7</td>
-                        <td><span class="badge badge-green">预测</span></td>
-                        <td>❌ 否</td>
-                        <td>差值仍不足</td>
-                    </tr>
-                    <tr class="row-future">
-                        <td><strong>2026Q4</strong></td>
-                        <td>1.8969</td>
-                        <td>2.00</td>
-                        <td class="gap-positive">10.3</td>
-                        <td><span class="badge badge-green">预测</span></td>
-                        <td>❌ 否</td>
-                        <td>差值仍不足</td>
-                    </tr>
-                    <tr class="row-future">
-                        <td><strong>2027Q1</strong></td>
-                        <td>1.8800</td>
-                        <td>2.00</td>
-                        <td class="gap-positive">12.0</td>
-                        <td><span class="badge badge-green">预测</span></td>
-                        <td>❌ 否</td>
-                        <td>差值仍不足</td>
-                    </tr>
+                <tbody id="mainTableBody">
+                    <tr><td colspan="7" style="text-align:center; color:#888;">数据加载中…</td></tr>
                 </tbody>
             </table>
         </div>
@@ -446,51 +370,8 @@
                         <th>触发状态</th>
                     </tr>
                 </thead>
-                <tbody>
-                    <tr>
-                        <td><strong>2026Q2</strong></td>
-                        <td>2026年7月</td>
-                        <td>1.9383</td>
-                        <td>2.4000</td>
-                        <td>1.9383</td>
-                        <td>1.7997</td>
-                        <td>2.0253</td>
-                        <td>6.2</td>
-                        <td><span class="trigger-no">未触发</span></td>
-                    </tr>
-                    <tr>
-                        <td><strong>2026Q3</strong></td>
-                        <td>2026年10月</td>
-                        <td>1.9229</td>
-                        <td>2.4000</td>
-                        <td>1.9229</td>
-                        <td>1.7843</td>
-                        <td>1.9436</td>
-                        <td>7.7</td>
-                        <td><span class="trigger-no">未触发</span></td>
-                    </tr>
-                    <tr>
-                        <td><strong>2026Q4</strong></td>
-                        <td>2027年1月</td>
-                        <td>1.8969</td>
-                        <td>2.4000</td>
-                        <td>1.8969</td>
-                        <td>1.7583</td>
-                        <td>1.8762</td>
-                        <td>10.3</td>
-                        <td><span class="trigger-no">未触发</span></td>
-                    </tr>
-                    <tr>
-                        <td><strong>2027Q1</strong></td>
-                        <td>2027年4月</td>
-                        <td>1.8800</td>
-                        <td>2.4000</td>
-                        <td>1.8800</td>
-                        <td>1.7414</td>
-                        <td>1.8293</td>
-                        <td>12.0</td>
-                        <td><span class="trigger-no">未触发</span></td>
-                    </tr>
+                <tbody id="predDetailBody">
+                    <tr><td colspan="9" style="text-align:center; color:#888;">数据加载中…</td></tr>
                 </tbody>
             </table>
         </div>
@@ -521,158 +402,189 @@
         
         <div class="footer">
             <p>数据来源：中国保险行业协会、平安人寿官网（2025年7月25日公告，9月1日生效）、中国货币网、AkShare | 监管依据：金寿险函〔2025〕10号</p>
-            <p style="margin-top: 5px;">报告生成时间：2026年7月2日 | 本报告仅供参考，不构成任何投资建议</p>
+            <p style="margin-top: 5px;">数据更新时间：<span id="dataUpdated">加载中…</span> | 本报告数值由 data/predictions.json + data/actuals.json 单一数据源自动渲染 | 本报告仅供参考，不构成任何投资建议</p>
         </div>
     </div>
     
-    <!-- ====== 图表脚本 ====== -->
+    <!-- ====== 图表脚本（单一数据源：predictions.json + actuals.json） ====== -->
     <script>
-        // ====== 差值趋势图 ======
+        // ====== 单一数据源加载与渲染 ======
         (function() {
-            const ctx = document.getElementById('gapChart').getContext('2d');
-            const labels = ['2025Q1', '2025Q2', '2025Q3', '2025Q4', '2026Q1', '2026Q2', '2026Q3', '2026Q4', '2027Q1'];
-            
-            // 最高值序列
-            const maxRates = [2.50, 2.50, 2.50, 2.00, 2.00, 2.00, 2.00, 2.00, 2.00];
-            
-            // 研究值序列
-            const researchValues = [2.34, 2.13, 1.99, 1.90, 1.93, 1.9383, 1.9229, 1.8969, 1.8800];
-            
-            // 差值 (BP)
-            const gaps = [];
-            for(let i = 0; i < labels.length; i++) {
-                gaps.push((maxRates[i] - researchValues[i]) * 100);
+            const TRIGGER_THRESHOLD = 0.25; // 25 BP
+
+            function fmt(v, d) { return Number(v).toFixed(d); }
+
+            async function loadData() {
+                const [predRes, actRes] = await Promise.all([
+                    fetch('data/predictions.json?t=' + Date.now()).then(r => r.json()),
+                    fetch('data/actuals.json?t=' + Date.now()).then(r => r.json())
+                ]);
+                return { preds: predRes.predictions || [], acts: actRes.actuals || [],
+                         predUpdated: predRes.last_updated || '未知', actUpdated: actRes.last_updated || '未知' };
             }
-            
-            new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: '差值 = 最高值 - 研究值 (BP)',
-                        data: gaps,
-                        backgroundColor: function(context) {
-                            const idx = context.dataIndex;
-                            if(idx < 5) return 'rgba(102, 126, 234, 0.7)';
-                            return 'rgba(255, 152, 0, 0.7)';
-                        },
-                        borderColor: function(context) {
-                            const idx = context.dataIndex;
-                            if(idx < 5) return 'rgb(102, 126, 234)';
-                            return 'rgb(255, 152, 0)';
-                        },
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        title: {
-                            display: true,
-                            text: '预定利率最高值 - 研究值 (BP)',
-                            font: { size: 14 }
-                        },
-                        annotation: {
-                            annotations: {
-                                triggerLine: {
-                                    type: 'line',
-                                    yMin: 25,
-                                    yMax: 25,
-                                    borderColor: 'red',
-                                    borderWidth: 2,
-                                    borderDash: [6, 3],
-                                    label: {
-                                        display: true,
-                                        content: '下调触发线: 25 BP',
-                                        position: 'start'
-                                    }
-                                }
-                            }
+
+            function renderMainTable(series) {
+                const tb = document.getElementById('mainTableBody');
+                // 连续触发计数（仅实际值）
+                let consecutive = 0;
+                tb.innerHTML = series.map((d, i) => {
+                    const gapBp = Math.round((d.maxRate - d.value) * 100);
+                    const gapCls = gapBp >= 25 ? 'gap-positive' : '';
+                    let triggerCell, note;
+                    if (d.type === 'actual') {
+                        if (gapBp >= 25) {
+                            consecutive++;
+                        } else {
+                            consecutive = 0;
                         }
-                    },
-                    scales: {
-                        y: {
-                            title: { display: true, text: '差值 (BP)' },
-                            beginAtZero: true,
-                            max: 60
+                        const triggered = consecutive >= 2;
+                        if (triggered) {
+                            triggerCell = '🔴 <span class="trigger-yes trigger-down">触发下调</span>';
+                        } else if (gapBp >= 25) {
+                            triggerCell = '⚠️ 第1季';
+                        } else {
+                            triggerCell = '❌ 否';
                         }
+                        note = d.note || ('差值 ' + gapBp + ' BP');
+                        var rowCls = (i === series.filter(x => x.type === 'actual').length - 1) ? 'row-now' : 'row-past';
+                    } else {
+                        consecutive = 0;
+                        triggerCell = gapBp >= 25 ? '⚠️ 可能触发' : '❌ 否';
+                        note = '差值 ' + gapBp + ' BP，' + (gapBp >= 25 ? '可能触发下调' : '未触发');
+                        var rowCls = 'row-future';
                     }
-                }
-            });
-        })();
-        
-        // ====== 研究值与最高值趋势图 ======
-        (function() {
-            const ctx = document.getElementById('trendChart').getContext('2d');
-            const labels = ['2025Q1', '2025Q2', '2025Q3', '2025Q4', '2026Q1', '2026Q2', '2026Q3', '2026Q4', '2027Q1'];
-            
-            const maxValues = [2.50, 2.50, 2.50, 2.00, 2.00, 2.00, 2.00, 2.00, 2.00];
-            const researchValues = [2.34, 2.13, 1.99, 1.90, 1.93, 1.9383, 1.9229, 1.8969, 1.8800];
-            
-            new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [
-                        {
-                            label: '预定利率最高值(%)',
-                            data: maxValues,
-                            borderColor: '#c62828',
-                            backgroundColor: 'rgba(198, 40, 40, 0.1)',
-                            borderWidth: 2.5,
-                            fill: false,
-                            stepped: true,
-                            pointRadius: 5,
-                            pointBackgroundColor: '#c62828'
-                        },
-                        {
-                            label: '预定利率研究值(%)',
-                            data: researchValues,
-                            borderColor: '#667eea',
-                            backgroundColor: 'rgba(102, 126, 234, 0.15)',
-                            borderWidth: 2.5,
-                            fill: true,
-                            tension: 0.3,
-                            pointRadius: function(ctx) {
-                                return ctx.dataIndex < 5 ? 5 : 6;
+                    const maxDisp = fmt(d.maxRate, 2);
+                    const valDisp = fmt(d.value, d.type === 'predicted' ? 4 : 2);
+                    return '<tr class="' + rowCls + '">' +
+                        '<td><strong>' + d.q + '</strong></td>' +
+                        '<td>' + valDisp + '</td>' +
+                        '<td>' + maxDisp + '</td>' +
+                        '<td class="' + gapCls + '">' + gapBp + (gapBp >= 25 ? ' <span class="badge badge-red">≥25</span>' : '') + '</td>' +
+                        '<td><span class="badge ' + (d.type === 'actual' ? 'badge-blue">实际' : 'badge-green">预测') + '</span></td>' +
+                        '<td>' + triggerCell + '</td>' +
+                        '<td>' + note + '</td>' +
+                        '</tr>';
+                }).join('');
+            }
+
+            function renderPredDetail(preds) {
+                const tb = document.getElementById('predDetailBody');
+                if (!preds.length) { tb.innerHTML = '<tr><td colspan="9" style="text-align:center;color:#a4282c;">无预测数据</td></tr>'; return; }
+                tb.innerHTML = preds.map(p => {
+                    const gapBp = Math.round((p.max_rate - p.predicted_value) * 100);
+                    const status = p.trigger ? '<span class="trigger-yes">可能触发</span>' : '<span class="trigger-no">未触发</span>';
+                    return '<tr>' +
+                        '<td><strong>' + p.quarter + '</strong></td>' +
+                        '<td>' + p.announced + '</td>' +
+                        '<td>' + fmt(p.predicted_value, 4) + '</td>' +
+                        '<td>' + fmt(p.ref_rate, 4) + '</td>' +
+                        '<td>' + fmt(p.base_return, 4) + '</td>' +
+                        '<td>' + fmt(p.ma250_gov, 4) + '</td>' +
+                        '<td>' + fmt(p.ma750_gov, 4) + '</td>' +
+                        '<td>' + gapBp + '</td>' +
+                        '<td>' + status + '</td>' +
+                        '</tr>';
+                }).join('');
+            }
+
+            function buildSeries(acts, preds) {
+                const a = acts.map(x => ({ q: x.quarter, value: x.value, maxRate: x.max_rate, type: 'actual', note: x.note }));
+                const p = preds.map(x => ({ q: x.quarter, value: x.predicted_value, maxRate: x.max_rate, type: 'predicted' }));
+                return a.concat(p).sort((x, y) => x.q.localeCompare(y.q));
+            }
+
+            function renderCharts(series) {
+                const labels = series.map(d => d.q);
+                const maxRates = series.map(d => d.maxRate);
+                const researchValues = series.map(d => d.value);
+                const types = series.map(d => d.type);
+                const gaps = series.map(d => Math.round((d.maxRate - d.value) * 100));
+
+                // 差值趋势图
+                const gapCtx = document.getElementById('gapChart').getContext('2d');
+                new Chart(gapCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: '差值 = 最高值 - 研究值 (BP)',
+                            data: gaps,
+                            backgroundColor: function(c) {
+                                return types[c.dataIndex] === 'actual' ? 'rgba(102,126,234,0.7)' : 'rgba(255,152,0,0.7)';
                             },
-                            pointBackgroundColor: function(ctx) {
-                                return ctx.dataIndex < 5 ? 'rgb(102, 126, 234)' : 'rgb(255, 152, 0)';
+                            borderColor: function(c) {
+                                return types[c.dataIndex] === 'actual' ? 'rgb(102,126,234)' : 'rgb(255,152,0)';
                             },
-                            pointStyle: function(ctx) {
-                                return ctx.dataIndex < 5 ? 'circle' : 'rectRounded';
-                            }
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        title: {
-                            display: true,
-                            text: '预定利率最高值与研究值对比趋势',
-                            font: { size: 14 }
-                        },
-                        tooltip: {
-                            callbacks: {
-                                afterLabel: function(context) {
-                                    const idx = context.dataIndex;
-                                    if(idx >= 5) return '⚠️ 预测值';
-                                    return '✓ 实际公布值';
-                                }
-                            }
-                        }
+                            borderWidth: 1
+                        }]
                     },
-                    scales: {
-                        y: {
-                            title: { display: true, text: '利率 (%)' },
-                            min: 1.7,
-                            max: 2.7
-                        }
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            title: { display: true, text: '预定利率最高值 - 研究值 (BP)', font: { size: 14 } },
+                            annotation: { annotations: { triggerLine: {
+                                type: 'line', yMin: 25, yMax: 25, borderColor: 'red', borderWidth: 2, borderDash: [6, 3],
+                                label: { display: true, content: '下调触发线: 25 BP', position: 'start' }
+                            }}}
+                        },
+                        scales: { y: { title: { display: true, text: '差值 (BP)' }, beginAtZero: true, max: 60 } }
                     }
+                });
+
+                // 研究值与最高值趋势图
+                const trendCtx = document.getElementById('trendChart').getContext('2d');
+                new Chart(trendCtx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            {
+                                label: '预定利率最高值(%)',
+                                data: maxRates,
+                                borderColor: '#c62828', backgroundColor: 'rgba(198,40,40,0.1)',
+                                borderWidth: 2.5, fill: false, stepped: true,
+                                pointRadius: 5, pointBackgroundColor: '#c62828'
+                            },
+                            {
+                                label: '预定利率研究值(%)',
+                                data: researchValues,
+                                borderColor: '#667eea', backgroundColor: 'rgba(102,126,234,0.15)',
+                                borderWidth: 2.5, fill: true, tension: 0.3,
+                                pointRadius: function(c) { return types[c.dataIndex] === 'actual' ? 5 : 6; },
+                                pointBackgroundColor: function(c) { return types[c.dataIndex] === 'actual' ? 'rgb(102,126,234)' : 'rgb(255,152,0)'; },
+                                pointStyle: function(c) { return types[c.dataIndex] === 'actual' ? 'circle' : 'rectRounded'; }
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            title: { display: true, text: '预定利率最高值与研究值对比趋势', font: { size: 14 } },
+                            tooltip: { callbacks: { afterLabel: function(c) {
+                                return types[c.dataIndex] === 'actual' ? '✓ 实际公布值' : '⚠️ 预测值';
+                            }}}
+                        },
+                        scales: { y: { title: { display: true, text: '利率 (%)' }, min: 1.7, max: 2.7 } }
+                    }
+                });
+            }
+
+            loadData().then(({ preds, acts, predUpdated, actUpdated }) => {
+                if (!preds.length && !acts.length) {
+                    document.getElementById('dataError').style.display = 'block';
+                    return;
                 }
+                const series = buildSeries(acts, preds);
+                renderMainTable(series);
+                renderPredDetail(preds);
+                renderCharts(series);
+                document.getElementById('dataUpdated').textContent =
+                    '预测 ' + predUpdated + ' / 实际 ' + actUpdated;
+            }).catch(e => {
+                console.error('数据加载失败：', e);
+                document.getElementById('dataError').style.display = 'block';
             });
         })();
     </script>
