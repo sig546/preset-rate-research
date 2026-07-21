@@ -1,20 +1,20 @@
 {
-  "date": "2026-07-10",
-  "overall": "⚠️ 通过（6 项提示，需关注）",
+  "date": "2026-07-21",
+  "overall": "⚠️ 通过（5 项提示，需关注）",
   "fail": 0,
-  "warn": 6,
+  "warn": 5,
   "rows": [
     {
       "id": "C1",
       "title": "预测值 SSOT",
       "status": "✅",
-      "note": "两页均引用 predictions.json，无分叉硬编码；当前四值 [1.9313, 1.9094, 1.8606, 1.8135]"
+      "note": "两页均引用 predictions.json，无分叉硬编码；当前四值 [1.9094, 1.8606, 1.8135, 1.8065]"
     },
     {
       "id": "C2",
       "title": "实际值三处一致",
-      "status": "✅",
-      "note": "actuals.json 六季（2024Q4..2026Q1）index.html 经 actuals.json 加载；formula_report.html 均含对应值"
+      "status": "⚠️",
+      "note": "formula_report.html 未检索到实际值：2026Q2=1.94（可能为表述差异，需人工复核）"
     },
     {
       "id": "C3",
@@ -31,8 +31,8 @@
     {
       "id": "C5",
       "title": "引用有效",
-      "status": "⚠️",
-      "note": "核心页面通过；遗留页面 ['formula_analysis_v2.html'] 仍含旧引用（技术债，参考 MIGRATION.md，建议改 SSOT 或下线）"
+      "status": "✅",
+      "note": "无旧脚本/死链引用；核心页面 LPR 来源 chinamoney.com.cn；公式说明指向 scripts/update_predictions.py"
     },
     {
       "id": "C6",
@@ -56,7 +56,7 @@
       "id": "C9",
       "title": "平推假设",
       "status": "✅",
-      "note": "四季差值 [6.9, 9.1, 13.9, 18.7] BP 均<25，平推（未来 LPR=3.50%/定存=1.30%/债券=1.7385% 维持不变）自洽"
+      "note": "四季差值 [9.1, 13.9, 18.7, 19.4] BP 均<25，平推（未来 LPR=3.50%/定存=1.30%/债券=1.7385% 维持不变）自洽"
     },
     {
       "id": "C10",
@@ -85,8 +85,8 @@
     {
       "id": "P3",
       "title": "基础回报公式",
-      "status": "⚠️",
-      "note": "两页均含「税收溢价 + 250/750 移动平均」核心口径，建议统一措辞"
+      "status": "✅",
+      "note": "index 与 formula_report 均使用紧凑式（= MA(gov)+MA(税收溢价)），与脚本一致"
     },
     {
       "id": "P4",
@@ -104,7 +104,7 @@
       "id": "P6",
       "title": "时间线",
       "status": "✅",
-      "note": "actuals 止于 2026Q1，predictions 起于 2026Q2，无错位"
+      "note": "actuals 止于 2026Q2，predictions 起于 2026Q3，无错位"
     },
     {
       "id": "P7",
@@ -134,7 +134,7 @@
       "id": "F2",
       "title": "BP 单位",
       "status": "⚠️",
-      "note": "index.html 出现小写 bp/bps；formula_report.html 出现小写 bp/bps；trigger_analysis_report.html 使用「个基点」（与全站 BP 不统一）；trigger_analysis_report.html 出现小写 bp/bps（建议统一为 BP；当前不阻断）"
+      "note": "核心页面统一「BP」；遗留页面 ['prediction_report.html', 'prediction_report_corrected.html', 'formula_analysis.html', 'formula_analysis_v2.html'] 仍混用「个基点」/小写 bp（技术债）"
     },
     {
       "id": "F3",
@@ -152,7 +152,7 @@
       "id": "F5",
       "title": "季度编号",
       "status": "✅",
-      "note": "2024Q4→2027Q1 连续无重复遗漏，实际/预测分界清晰"
+      "note": "2024Q4→2027Q2 连续无重复遗漏，实际/预测分界清晰"
     },
     {
       "id": "F6",
@@ -167,6 +167,12 @@
       "note": "页面读取字段名与 predictions.json/actuals.json 字段名一致，无拼写漂移"
     },
     {
+      "id": "F8",
+      "title": "离线快照时效",
+      "status": "✅",
+      "note": "index.html 离线快照 SNAPSHOT_UPDATED=2026-07-21 23:30 与 predictions.json.last_updated 一致"
+    },
+    {
       "id": "A1",
       "title": "一致性校验",
       "status": "✅",
@@ -176,13 +182,13 @@
       "id": "A2",
       "title": "数据不过期",
       "status": "✅",
-      "note": "last_updated=2026-07-10 13:51（0.0 天前，≤40）"
+      "note": "last_updated=2026-07-21 23:30（0.0 天前，≤40）"
     },
     {
       "id": "A3",
       "title": "发版后实测",
-      "status": "✅",
-      "note": "线上两页无旧值、均引用 predictions.json，predictions.json 首值=1.9313"
+      "status": "🔍",
+      "note": "发版后由独立步骤/手动执行：curl 抓取线上两页，确认无旧值 1.9383、均引用 predictions.json、last_updated 一致。本次试运行已附带 LIVE_CHECK=1 实测。"
     }
   ]
 }

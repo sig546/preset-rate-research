@@ -78,7 +78,14 @@ def load_live_values():
     with open(PRED_FILE, encoding="utf-8") as f:
         d = json.load(f)
         for p in d.get("predictions", []):
+            # 研究值主字段
             live.add(f"{p['predicted_value']:.4f}")
+            # 其余数值字段（base_return / ref_rate / ma250_gov / ma750_gov / spread_* 等）：
+            # index.html 内嵌离线快照是 predictions.json 的忠实副本，这些字段也应视为「实时值」，
+            # 否则快照里的 ma250_gov 等 4 位小数会被规则1 误判为分叉硬编码而阻断发版。
+            for k, v in p.items():
+                if isinstance(v, (int, float)) and k not in ("gap_bp", "trigger"):
+                    live.add(f"{v:.4f}")
     with open(ACT_FILE, encoding="utf-8") as f:
         d = json.load(f)
         for a in d.get("actuals", []):

@@ -95,8 +95,16 @@ class Recorder:
 
 def check_c1(rec, pred, act, html_files):
     """预测值唯一来源 SSOT"""
-    live = {f"{p['predicted_value']:.4f}" for p in pred["predictions"]} | \
-           {f"{a['value']:.4f}" for a in act["actuals"]}
+    live = set()
+    for p in pred["predictions"]:
+        live.add(f"{p['predicted_value']:.4f}")
+        # index.html 内嵌离线快照是 predictions.json 的忠实副本，其 ma250_gov/ma750_gov 等
+        # 4 位小数也视为「实时值」，否则会被误判为分叉硬编码而 FAIL。
+        for k, v in p.items():
+            if isinstance(v, (int, float)) and k not in ("gap_bp", "trigger"):
+                live.add(f"{v:.4f}")
+    for a in act["actuals"]:
+        live.add(f"{a['value']:.4f}")
     bad = []
     for fn in ("index.html", "trigger_analysis_report.html"):
         content = read_text(os.path.join(ROOT, fn))
@@ -332,19 +340,27 @@ def check_p2(rec):
 
 
 def check_p3(rec):
-    """基础回报公式表述一致"""
+    """基础回报公式表述一致（与脚本真实算法对齐）"""
     idx = read_text(os.path.join(ROOT, "index.html"))
     frep = read_text(os.path.join(ROOT, "formula_report.html"))
+    # 紧凑式「（10年期国债到期收益率 + 税收溢价）250日移动平均」是「先各自 MA 再加」的简写，
+    # 等价于展开式「10年期国债收益率250日移动平均 + 税收溢价(250MA)」；二者均与脚本一致
+    # （scripts/update_predictions.py: base = ma250_gov + spread_250）。两者数学等价，均非「先加后平均」。
+    compact = "（10年期国债到期收益率 + 税收溢价）250日移动平均"
+    expanded = "10年期国债收益率250日移动平均 + 税收溢价(250MA)"
     core_ok = ("税收溢价" in idx and "税收溢价" in frep and
                "250" in idx and "750" in idx and "移动平均" in idx)
-    if core_ok and "(10年期国债到期收益率 + 税收溢价) 250日移动平均" in idx and \
-       "(10年期国债收益率 + 税收溢价)" in frep:
+    both_compact = compact in idx and compact in frep
+    either = (compact in idx or compact in frep or expanded in idx or expanded in frep)
+    if core_ok and both_compact:
+        rec.add("P3", "基础回报公式", PASS,
+                "index 与 formula_report 均使用紧凑式（= MA(gov)+MA(税收溢价)），与脚本一致")
+    elif core_ok and either:
         rec.add("P3", "基础回报公式", WARN,
-                "两页核心口径一致（税收溢价 + 250/750 移动平均），但措辞略有差异："
-                "index 用「10年期国债到期收益率 / 250日移动平均」，formula 用「10年期国债收益率 / 250MA」。"
-                "建议统一文字表述")
+                "两页基础回报公式一用紧凑式、一用展开式（二者等价=MA(gov)+MA(税收溢价)），建议统一文字")
     elif core_ok:
-        rec.add("P3", "基础回报公式", WARN, "两页均含「税收溢价 + 250/750 移动平均」核心口径，建议统一措辞")
+        rec.add("P3", "基础回报公式", WARN,
+                "两页均含「税收溢价 + 250/750 移动平均」核心口径，但措辞未完全一致")
     else:
         rec.add("P3", "基础回报公式", FAIL, "基础回报公式核心口径在两页不一致")
 
@@ -454,7 +470,8 @@ def check_f2(rec, html_files):
         c = read_text(os.path.join(ROOT, fn))
         if "个基点" in c:
             core_bad.append(f"{fn} 使用「个基点」（与全站 BP 不统一）")
-        if re.search(r"\bbp\b|\bbps\b", c, re.I):
+        # 仅匹配真正的 lowercase bp/bps（显式大小写敏感，避免把正确的大写「BP」误判为小写）
+        if re.search(r"\bbp\b|\bbps\b", c):
             core_bad.append(f"{fn} 出现小写 bp/bps")
     if core_bad:
         rec.add("F2", "BP 单位", WARN, "；".join(core_bad) + "（建议统一为 BP；当前不阻断）")
@@ -495,17 +512,35 @@ def check_f4(rec, html_files):
             "中文全角标点、季度区间连接号（~ / ～）、日期 YYYY-MM-DD 风格需人工目视核对全站一致性")
 
 
+def _next_quarter(q: str) -> str:
+    y, n = int(q[:4]), int(q[5:])
+    n += 1
+    if n > 4:
+        n = 1; y += 1
+    return f"{y}Q{n}"
+
+
 def check_f5(rec, act, pred):
-    """季度编号连贯"""
+    """季度编号连贯（动态推导期望区间，避免窗口前滚后硬编码失效）"""
     qs = [a["quarter"] for a in act["actuals"]] + [p["quarter"] for p in pred["predictions"]]
-    expected = ["2024Q4", "2025Q1", "2025Q2", "2025Q3", "2025Q4",
-                "2026Q1", "2026Q2", "2026Q3", "2026Q4", "2027Q1"]
+    if not qs:
+        rec.add("F5", "季度编号", FAIL, "无季度数据")
+        return
+    # 字符串 "YYYYQn" 字典序即季度时间序，可直接排序/比较
+    ordered = sorted(qs)
+    start, end = ordered[0], ordered[-1]
+    expected = []
+    cur = start
+    while cur <= end and len(expected) <= 60:   # cur<=end 用季度字典序
+        expected.append(cur)
+        cur = _next_quarter(cur)
     if qs == expected:
-        rec.add("F5", "季度编号", PASS, "2024Q4→2027Q1 连续无重复遗漏，实际/预测分界清晰")
+        rec.add("F5", "季度编号", PASS, f"{start}→{end} 连续无重复遗漏，实际/预测分界清晰")
     else:
         dup = [q for q in set(qs) if qs.count(q) > 1]
         miss = [q for q in expected if q not in qs]
-        rec.add("F5", "季度编号", FAIL, f"重复={dup} 缺失={miss}")
+        extra = [q for q in qs if q not in expected]
+        rec.add("F5", "季度编号", FAIL, f"重复={dup} 缺失={miss} 多余={extra}")
 
 
 def check_f6(rec):
@@ -664,6 +699,24 @@ def build_report(rec, meta):
 # 主流程
 # ===========================================================================
 
+def check_f8(rec, pred):
+    """离线快照时效（核心阻断）：index.html 内嵌 SNAPSHOT_UPDATED 须 == predictions.json.last_updated"""
+    idx = read_text(os.path.join(ROOT, "index.html"))
+    m = re.search(r'SNAPSHOT_UPDATED\s*=\s*"([^"]+)"', idx)
+    if not m:
+        rec.add("F8", "离线快照时效", FAIL, "index.html 未找到 SNAPSHOT_UPDATED，无法校验离线快照时效")
+        return
+    snap = m.group(1).strip()
+    live = (pred.get("last_updated") or "").strip()
+    if snap == live:
+        rec.add("F8", "离线快照时效", PASS,
+                f"index.html 离线快照 SNAPSHOT_UPDATED={snap} 与 predictions.json.last_updated 一致")
+    else:
+        rec.add("F8", "离线快照时效", FAIL,
+                f"index.html 离线快照({snap}) 与 predictions.json.last_updated({live}) 不一致："
+                f"predictions.json 更新后须同步刷新页面内嵌快照（scripts/sync_index_snapshot.py）")
+
+
 def main():
     os.makedirs(REPORT_DIR, exist_ok=True)
     pred = load_json(os.path.join(DATA, "predictions.json"))
@@ -701,6 +754,7 @@ def main():
     check_f5(rec, act, pred)
     check_f6(rec)
     check_f7(rec, pred, act, html_files)
+    check_f8(rec, pred)
     # 自动化防线
     check_a1(rec)
     check_a2(rec, pred)

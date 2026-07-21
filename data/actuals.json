@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-04-28",
+  "last_updated": "2026-07-21",
   "description": "普通型人身保险产品预定利率研究值实际公布值（来源：中国保险行业协会）",
   "actuals": [
     {"quarter": "2024Q4", "announced": "2025年1月", "value": 2.34, "max_rate": 2.50, "change_bp": null, "note": "首次披露（机制建立，2025年1月13日公布）"},
@@ -7,6 +7,7 @@
     {"quarter": "2025Q2", "announced": "2025年7月", "value": 1.99, "max_rate": 2.50, "change_bp": -14, "note": "下调14BP；7/25公告触发下调（2025年7月25日公布）"},
     {"quarter": "2025Q3", "announced": "2025年10月", "value": 1.90, "max_rate": 2.00, "change_bp": -9, "note": "下调9BP；新上限9月1日起生效为2.00%"},
     {"quarter": "2025Q4", "announced": "2026年1月", "value": 1.89, "max_rate": 2.00, "change_bp": -1, "note": "下调1BP，四连降（2026年1月20日公布）"},
-    {"quarter": "2026Q1", "announced": "2026年4月", "value": 1.93, "max_rate": 2.00, "change_bp": 4, "note": "回升+4BP，首次上调（2026年4月27日公布）"}
+    {"quarter": "2026Q1", "announced": "2026年4月", "value": 1.93, "max_rate": 2.00, "change_bp": 4, "note": "回升+4BP，首次上调（2026年4月27日公布）"},
+    {"quarter": "2026Q2", "announced": "2026年7月", "value": 1.94, "max_rate": 2.00, "change_bp": 1, "note": "回升+1BP（2026年7月21日公布，中保协2026年二季度例会7月20日召开）"}
   ]
 }

@@ -79,11 +79,22 @@
         .info strong { display: block; margin-bottom: 0.25rem; }
         .formula-box { background: linear-gradient(180deg, #f8fafc, #eef2ff); border: 1px solid var(--primary-light); border-left: 4px solid var(--primary); }
         .formula-title { font-size: 0.98rem; color: var(--primary-dark); margin-bottom: 0.6rem; }
-        .formula-steps { font-family: var(--font-mono); font-size: 0.82rem; color: var(--text); line-height: 2; }
+        .formula-steps { font-family: var(--font-sans); font-size: 0.82rem; color: var(--text); line-height: 2; }
         .formula-line { display: flex; gap: 0.6rem; align-items: baseline; flex-wrap: wrap; }
         .formula-line .fl-tag { flex: 0 0 auto; min-width: 4.5rem; text-align: right; font-family: var(--font-sans); font-weight: 600; color: var(--primary-dark); background: var(--primary-light); padding: 1px 8px; border-radius: 6px; font-size: 0.78rem; }
         .formula-note { margin-top: 0.7rem; font-size: 0.76rem; line-height: 1.7; color: var(--text-secondary); border-top: 1px dashed var(--border); padding-top: 0.55rem; }
         .formula-note::first-letter { font-weight: 700; }
+        .reg-link { color: var(--primary); text-decoration: none; border-bottom: 1px dashed var(--primary); padding-bottom: 1px; font-weight: 500; }
+        .reg-link:hover { color: var(--primary-dark); border-bottom-style: solid; }
+        .source-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-top: 0.85rem; }
+        .source-grid .info { margin-bottom: 0; padding: 0.55rem 0.75rem; font-size: 0.8rem; line-height: 1.5; }
+        .source-grid .info strong { margin-bottom: 0.15rem; font-size: 0.82rem; }
+        @media (max-width: 640px) { .source-grid { grid-template-columns: 1fr; } }
+        .trigger-rules .info { padding: 0.6rem 0.8rem; font-size: 0.82rem; line-height: 1.55; }
+        .trigger-rules .info strong { display: inline; margin-bottom: 0; }
+        .trigger-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 0.5rem; }
+        .trigger-grid .info { margin-bottom: 0; }
+        @media (max-width: 640px) { .trigger-grid { grid-template-columns: 1fr; } }
         .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
         @media (max-width:768px){ .grid-2 { grid-template-columns: 1fr; } }
         .cols-2 { display: grid; grid-template-columns: 2fr 1fr; gap: 1.25rem; }
@@ -198,14 +209,17 @@
 <!-- ====== PREDICTION TABLE ====== -->
 <div class="section">
     <h2>🔮 未来4季度预测详情（平推法）</h2>
+    <div class="info red" id="offlineBanner" style="display:none; margin-bottom:0.75rem;">
+        <strong>⚠️ 离线预览</strong> 预测值为页面内嵌快照（更新于 <span id="offlineUpdated">--</span>），非实时抓取。如需最新数据，请通过本地服务器（<code>python -m http.server</code>）打开或访问已部署站点。
+    </div>
     <table class="tbl" id="predTable"></table>
     <div class="info blue" style="margin-top:1rem;" id="flatForwardInfo">
         <strong>📐 平推假设</strong>
-        5年期LPR当前3.50%，六大行5年期定存当前1.30%，10年期国债最新1.7410%，未来无实际数据日期均沿用最新数值。
+        5年期LPR当前3.50%，六大行5年期定存当前1.30%，10年期国债最新1.7385%，未来无实际数据日期均沿用最新数值。
     </div>
     <div class="info green" style="margin-top:0.75rem;">
         <strong>🔵 机构共识：年内触发调整概率极低</strong>
-        中泰证券、华创证券、国泰海通等多家机构一致认为：当前研究值与最高值仅差7BP，远低于25BP触发线，2026年全年不会触发预定利率上限的被动下调。<a href="prediction_views.html" target="_blank" style="color:var(--primary);font-weight:500;text-decoration:none;border-bottom:1px dashed var(--primary);">查看完整机构观点 →</a>
+        中泰证券、华创证券、国泰海通等多家机构一致认为：当前研究值与最高值仅差<span id="consensusGapNum">6</span>BP，远低于25BP触发线，2026年全年不会触发预定利率上限的被动下调。<a href="prediction_views.html" target="_blank" style="color:var(--primary);font-weight:500;text-decoration:none;border-bottom:1px dashed var(--primary);">查看完整机构观点 →</a>
     </div>
 </div>
 
@@ -221,20 +235,26 @@
             </div>
             <p class="formula-note">* 税收溢价：国债与政策性金融债（指国家开发银行、中国农业发展银行和中国进出口银行等政策性银行发行的债券）收益率差异主要由于国债利息收入免税，二者息差作为税收溢价的代表。</p>
         </div>
-        <div class="info blue"><strong>📈 5年期LPR</strong> 来源：中国货币网 · 当前 3.50%（2025-05-20起）</div>
-        <div class="info blue"><strong>🏦 六大行定存</strong> 来源：工农中建交邮官网 · 当前 1.30%（2025-05-20起）</div>
-        <div class="info blue"><strong>📊 10年期国债</strong> 来源：中国货币网日频（akshare）</div>
-        <div class="info green"><strong>✅ 税收溢价</strong> 由10Y国开债/进出口债与国债收益率之差动态计算（250/750日移动平均）</div>
+        <div class="source-grid">
+            <div class="info blue"><strong>📈 5年期LPR</strong> 来源：中国货币网 · 当前 3.50%（2025-05-20起）</div>
+            <div class="info blue"><strong>🏦 六大行定存</strong> 来源：工农中建交邮官网 · 当前 1.30%（2025-05-20起）</div>
+            <div class="info blue"><strong>📊 10年期国债</strong> 来源：中国货币网日频（akshare）</div>
+            <div class="info blue"><strong>✅ 税收溢价</strong> 由10Y国开债/进出口债与国债收益率之差动态计算（250/750日移动平均）</div>
+        </div>
         <div style="margin-top:0.75rem;"><a href="formula_report.html" target="_blank" class="btn-link">查看完整计算公式报告 →</a></div>
     </div>
 
     <div class="section">
         <h2>📜 监管触发规则</h2>
-        <p style="font-size:0.8rem;color:var(--text-secondary);margin-bottom:0.75rem;">依据：金寿险函〔2025〕10号 第三条(二)</p>
-        <div class="info red"><strong>⬇️ 下调触发</strong> 当最高值 <strong>连续2个季度</strong> 比研究值高 ≥ 25 BP，必须下调新产品预定利率最高值</div>
-        <div class="info green"><strong>⬆️ 上调触发</strong> 当最高值 <strong>连续2个季度</strong> 比研究值低 ≥ 25 BP，可适当上调（不超过研究值）</div>
-        <div class="info yellow"><strong>⚡ 紧急调整</strong> 市场利率或公司经营出现重大变化时，及时启动决策机制</div>
-        <div class="info red" style="margin-top:0.75rem;" id="triggerHistory"></div>
+        <p style="font-size:0.8rem;color:var(--text-secondary);margin-bottom:0.75rem;">依据：<a href="https://insurance.jrj.com.cn/2025/01/10172547343148.shtml" target="_blank" class="reg-link">金寿险函〔2025〕10号《关于建立预定利率与市场利率挂钩及动态调整机制有关事项的通知》</a> 第三条(二)</p>
+        <div class="trigger-rules">
+            <div class="trigger-grid">
+                <div class="info red"><strong>⬇️ 下调触发：</strong>当本公司在售普通型产品最高值连续 2 个季度比研究值 ≥ 25 BP，要及时下调新产品预定利率最高值，并在 2 个月内平稳做好新老产品切换工作。</div>
+                <div class="info green"><strong>⬆️ 上调触发：</strong>当本公司在售普通型产品最高值比研究值低 ≥ 25 BP，可适当上调新产品预定利率最高值，但不得高于研究值。</div>
+            </div>
+            <div class="info yellow" style="margin-top:0.5rem;"><strong>⚡ 紧急调整：</strong>当市场利率或本公司经营出现重大变化时，要及时启动相应决策机制，进行相关调整。</div>
+        </div>
+        <div class="info red" style="margin-top:0.5rem;" id="triggerHistory"></div>
         <div style="margin-top:0.75rem;"><a href="trigger_analysis_report.html" target="_blank" class="btn-link">查看完整触发分析报告 →</a></div>
     </div>
 </div>
@@ -255,13 +275,22 @@ const FALLBACK_ACTUALS = [
     { quarter: "2025Q2", announced: "2025年7月", value: 1.99, max_rate: 2.50, change_bp: -14, note: "下调14BP；7/25公告触发下调" },
     { quarter: "2025Q3", announced: "2025年10月", value: 1.90, max_rate: 2.00, change_bp: -9, note: "下调9BP；新上限9/1生效" },
     { quarter: "2025Q4", announced: "2026年1月", value: 1.89, max_rate: 2.00, change_bp: -1, note: "下调1BP（四连降）" },
-    { quarter: "2026Q1", announced: "2026年4月", value: 1.93, max_rate: 2.00, change_bp: 4, note: "回升+4BP（首次上调）" }
+    { quarter: "2026Q1", announced: "2026年4月", value: 1.93, max_rate: 2.00, change_bp: 4, note: "回升+4BP（首次上调）" },
+    { quarter: "2026Q2", announced: "2026年7月", value: 1.94, max_rate: 2.00, change_bp: 1, note: "回升+1BP（2026年7月21日公布）" }
 ];
 
-// 注意：预测值为单一数据源（data/predictions.json）。此处不再提供任何「写死的兜底预测值」，
-// 因为过时的兜底数字会与 report 页面静默分叉（即本次修复的根因）。
-// 若 predictions.json 加载失败，预测区将留空并显式提示，而非显示错误数值。
-const FALLBACK_PREDICTIONS = [];
+// 离线快照：仅当 fetch 失败（如本地 file:// 直接打开）时回退使用，带自身更新时间以便透明展示。
+// 它不是独立数据源——scripts/run_checklist.py 的 F8 会强制要求 SNAPSHOT_UPDATED 与
+// data/predictions.json 的 last_updated 完全一致，否则阻断发版，从机制上杜绝
+// 「快照过期却静默伪装成实时」的分叉风险。predictions.json 更新后须同步刷新本快照
+// （见 scripts/sync_index_snapshot.py）。
+const SNAPSHOT_UPDATED = "2026-07-21 23:30";
+const FALLBACK_PREDICTIONS = [
+    { quarter: "2026Q3", announced: "2026年10月", predicted_value: 1.9094, ref_rate: 2.4, base_return: 1.9094, ma250_gov: 1.7863, ma750_gov: 1.9876, spread_250: 0.1231, spread_750: 0.1373, max_rate: 2.0, gap_bp: 9.1, trigger: false },
+    { quarter: "2026Q4", announced: "2027年1月", predicted_value: 1.8606, ref_rate: 2.4, base_return: 1.8606, ma250_gov: 1.761, ma750_gov: 1.9067, spread_250: 0.0996, spread_750: 0.1259, max_rate: 2.0, gap_bp: 13.9, trigger: false },
+    { quarter: "2027Q1", announced: "2027年4月", predicted_value: 1.8135, ref_rate: 2.4, base_return: 1.8135, ma250_gov: 1.74, ma750_gov: 1.8503, spread_250: 0.0734, spread_750: 0.113, max_rate: 2.0, gap_bp: 18.7, trigger: false },
+    { quarter: "2027Q2", announced: "2027年7月", predicted_value: 1.8065, ref_rate: 2.4, base_return: 1.8065, ma250_gov: 1.7385, ma750_gov: 1.8035, spread_250: 0.068, spread_750: 0.1069, max_rate: 2.0, gap_bp: 19.4, trigger: false }
+];
 
 const TRIGGER_THRESHOLD = 0.25;
 let allQuarters = [];
@@ -271,9 +300,11 @@ let mainChart = null;
 // ===== DATA LOADING =====
 async function loadData() {
     let actuals = FALLBACK_ACTUALS;
-    let preds = FALLBACK_PREDICTIONS;
+    let preds = [];
     let loadedFromAPI = false;
     let predsLoaded = false;
+    let predsUpdated = SNAPSHOT_UPDATED;
+    let offline = false;
 
     try {
         const [actualsRes, predsRes] = await Promise.all([
@@ -286,10 +317,18 @@ async function loadData() {
         }
         if (predsRes.predictions && predsRes.predictions.length > 0) {
             preds = predsRes.predictions;
+            predsUpdated = predsRes.last_updated || predsUpdated;
             predsLoaded = true;
         }
     } catch (e) {
-        console.warn('JSON loading failed, using fallback data:', e);
+        console.warn('JSON loading failed (e.g. opened via file://), using offline snapshot:', e);
+    }
+
+    // fetch 失败（如本地 file:// 直接打开）→ 回退到内嵌离线快照，并显式标注，绝不伪装成实时
+    if (!predsLoaded) {
+        preds = FALLBACK_PREDICTIONS;
+        predsLoaded = true;
+        offline = true;
     }
 
     // Merge
@@ -329,20 +368,23 @@ async function loadData() {
         updateTriggerHistory();
     }
     updatePredictionTable(preds);
-    updateMetaFooter(actuals, loadedFromAPI, predsLoaded);
+    document.getElementById('offlineBanner').style.display = offline ? 'block' : 'none';
+    if (offline) document.getElementById('offlineUpdated').textContent = SNAPSHOT_UPDATED;
+    updateMetaFooter(actuals, loadedFromAPI, predsLoaded, offline, predsUpdated);
     renderDataTable();
     renderChart();
 }
 
-function updateMetaFooter(actuals, fromAPI, predsLoaded) {
+function updateMetaFooter(actuals, fromAPI, predsLoaded, offline, predsUpdated) {
     const last = actuals[actuals.length - 1];
     const lastPred = predList.length > 0 ? predList[0].quarter : '--';
     const lastPredEnd = predList.length > 0 ? predList[predList.length - 1].quarter : '--';
+    const srcLabel = offline ? '离线快照' : (fromAPI ? '自动JSON' : '离线兜底');
     document.getElementById('headerMeta').textContent =
-        `最新数据：${last.announced}公布 | 预测范围：${lastPred}–${lastPredEnd} | 数据加载：${fromAPI ? '自动JSON' : '离线兜底'}`;
-    let footer = '报告生成时间：' + new Date().toISOString().slice(0, 10);
-    if (!predsLoaded) {
-        footer += ' ｜ ⚠️ 预测数据加载失败（predictions.json 不可达），预测区暂不可用';
+        `最新数据：${last.announced}公布 | 预测范围：${lastPred}–${lastPredEnd} | 数据更新时间：${predsUpdated}（${srcLabel}）`;
+    let footer = `数据更新时间：${predsUpdated}`;
+    if (offline) {
+        footer += ' ｜ ⚠️ 离线预览：预测值为内嵌快照，非实时抓取；如需最新请经本地服务器或部署后访问';
     }
     document.getElementById('footerDate').textContent = footer;
 }
@@ -372,6 +414,8 @@ function updateMetricCards(actuals) {
         document.getElementById('cardGapTag').textContent = '⚠️ 需关注';
         document.getElementById('cardGapTag').className = 'tag tag-red';
     }
+    const gapEl = document.getElementById('consensusGapNum');
+    if (gapEl) gapEl.textContent = gapBP;
     // Card 4
     if (predList.length > 0) {
         const next = predList[0];
@@ -415,9 +459,15 @@ function updateTimeline() {
     const tl = document.getElementById('timeline');
     const events = [];
     // Generate from actuals
+    let firstRebound = true;
     allQuarters.filter(d => d.type === 'actual').forEach(d => {
         if (d.change_bp !== null && d.change_bp > 0) {
-            events.push({ date: d.announced, cls: '', title: '首次回升', desc: '研究值回升至 ' + d.value.toFixed(2) + '%（+' + d.change_bp + ' BP），止跌反弹' });
+            if (firstRebound) {
+                events.push({ date: d.announced, cls: '', title: '首次回升', desc: '研究值止跌回升至 ' + d.value.toFixed(2) + '%（+' + d.change_bp + ' BP），结束四连降' });
+                firstRebound = false;
+            } else {
+                events.push({ date: d.announced, cls: '', title: '连续回升', desc: '研究值连续回升至 ' + d.value.toFixed(2) + '%（+' + d.change_bp + ' BP）' });
+            }
         }
         // Detect trigger
         if (d.triggered) {

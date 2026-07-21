@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-07-10 13:51",
+  "last_updated": "2026-07-21 23:30",
   "method": "平推法",
   "description": "预定利率研究值模型预测",
   "base_data": {
@@ -8,20 +8,6 @@
     "bond_yield_10y": 1.7385
   },
   "predictions": [
-    {
-      "quarter": "2026Q2",
-      "announced": "2026年7月",
-      "predicted_value": 1.9313,
-      "ref_rate": 2.4,
-      "base_return": 1.9313,
-      "ma250_gov": 1.7902,
-      "ma750_gov": 2.0657,
-      "spread_250": 0.1411,
-      "spread_750": 0.1505,
-      "max_rate": 2.0,
-      "gap_bp": 6.9,
-      "trigger": false
-    },
     {
       "quarter": "2026Q3",
       "announced": "2026年10月",
@@ -62,6 +48,20 @@
       "spread_750": 0.113,
       "max_rate": 2.0,
       "gap_bp": 18.7,
+      "trigger": false
+    },
+    {
+      "quarter": "2027Q2",
+      "announced": "2027年7月",
+      "predicted_value": 1.8065,
+      "ref_rate": 2.4,
+      "base_return": 1.8065,
+      "ma250_gov": 1.7385,
+      "ma750_gov": 1.8035,
+      "spread_250": 0.068,
+      "spread_750": 0.1069,
+      "max_rate": 2.0,
+      "gap_bp": 19.4,
       "trigger": false
     }
   ],

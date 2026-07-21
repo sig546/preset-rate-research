@@ -39,6 +39,9 @@ jobs:
         env:
           FORCE_UPDATE: ${{ github.event.inputs.force || 'false' }}
 
+      - name: 同步 index.html 离线快照
+        run: python scripts/sync_index_snapshot.py
+
       - name: 一致性校验（单一数据源守卫）
         run: python scripts/check_data_consistency.py
 
@@ -52,7 +55,7 @@ jobs:
           else
             git config user.name "prediction-bot"
             git config user.email "bot@preset-rate-research"
-            git add data/bond_yields.json data/predictions.json logs/ || true
+            git add data/bond_yields.json data/predictions.json index.html logs/ || true
             git commit -m "自动更新: $(date +%Y-%m-%d_%H:%M) - 预测值更新" || echo "无变更可提交"
             git push || echo "推送失败"
             echo "推送完成"
